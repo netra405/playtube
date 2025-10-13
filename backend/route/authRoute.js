@@ -1,6 +1,6 @@
 import express from "express"
 import upload from "../middleware/multer.js"
-import { signIn, signOut, signUp } from "../controller/authController.js"
+import { signIn, signOut, signUp } from "../controller/authController.js";
 
 const authRouter = express.Router()
 
