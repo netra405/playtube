@@ -15,12 +15,16 @@ import { SiYoutubeshorts } from "react-icons/si";
 import { MdOutlineSubscriptions } from "react-icons/md";
 import logo from "../assets/playTube1.png";
 import { Outlet, useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
+import Profile from "../component/Profile";
 
 const Home = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [selectedItem, setSelectedItem] = useState("Home");
   const [active, setActive] = useState("Home");
   const navigate = useNavigate()
+  const { userData } = useSelector((state)=>state.user)
+  const [popup, setPopup] = useState(false)
 
   const categories = [
     "Music","Gaming","Movies","TV Shows","News","Trending",
@@ -68,11 +72,12 @@ const Home = () => {
 
           {/* Right */}
           <div className="flex items-center gap-3">
-            <button className="hidden md:flex items-center gap-1 py-1 rounded-full bg-[#272727] px-3 cursor-pointer">
+           {userData?.channel && <button className="hidden md:flex items-center gap-1 py-1 rounded-full bg-[#272727] px-3 cursor-pointer">
               <span className="text-lg">+</span>
               <span>Create</span>
-            </button>
-            <FaUserCircle className="text-3xl hidden md:flex text-gray-400 cursor-pointer" />
+            </button>}
+            {!userData ?.photoUrl ? <FaUserCircle onClick={()=>setPopup(prev => !prev)} className="text-3xl hidden md:flex text-gray-400 cursor-pointer" /> : <img onClick={()=>setPopup(prev => !prev)} src={userData?.photoUrl} className="w-9 
+            h-9 rounded-full object-cover border-1 border-gray-700 hidden md:flex"/>}
             <FaSearch className="text-lg md:hidden flex" />
           </div>
         </div>
@@ -162,6 +167,7 @@ const Home = () => {
               {cat}
             </button>
           ))}
+         {popup && <Profile/>}
         </div>
        </>}
         <div className="mt-2">
@@ -195,7 +201,7 @@ const Home = () => {
           onClick={() => setActive("Subscriptions")}
         />
         <MobileNavButton
-          icon={<FaUserCircle />}
+          icon={!userData?.photoUrl ?<FaUserCircle /> : <img src={userData?.photoUrl} className="w-8 h-8 rounded-full object-cover border border-gray-700"/>}
           text="You"
           active={active === "You"}
           onClick={() => setActive("You")}
