@@ -133,3 +133,51 @@ export const signOut = async (req, res) => {
     return res.status(500).json({ success: false, message: `signOut error: ${error.message}` });
   }
 };
+
+
+export const googleAuth = async (req,res)=>{
+  try {
+    
+    const {userName, email, photoUrl} = req.body;
+    let googlePhoto = photoUrl
+
+    if (photoUrl) {
+      try {
+        
+        googlePhoto = await uploadOnCloudinary(photoUrl)
+
+      } catch (error) {
+        console.log("Cloudinary upload failed")
+      }
+    }
+    const user = await User.findOne({email})
+    if (!user) {
+      await User.create({
+        userName,
+        email,
+        photoUrl:googlePhoto
+      })
+    } else{
+      if (!user.photoUrl && googlePhoto) {
+        user.photoUrl = googlePhoto
+        await user.save()
+      }
+    }
+
+     // Generate token
+    const token = genToken(user._id);
+
+    // Set cookie
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: false, // set true in production
+      sameSite: "Strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
+     return res.status(201).json(user)
+
+
+  } catch (error) {
+     return res.status(500).json({ success: false, message: `GoogleAuth error: ${error.message}` });
+  }
+}
