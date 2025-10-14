@@ -181,7 +181,7 @@ const Home = () => {
           icon={<FaHome />}
           text="Home"
           active={active === "Home"}
-          onClick={() => setActive("Home")}
+          onClick={() => {setActive("Home"); navigate("/")}}
         />
         <MobileNavButton
           icon={<SiYoutubeshorts />}
@@ -204,7 +204,7 @@ const Home = () => {
           icon={!userData?.photoUrl ?<FaUserCircle /> : <img src={userData?.photoUrl} className="w-8 h-8 rounded-full object-cover border border-gray-700"/>}
           text="You"
           active={active === "You"}
-          onClick={() => setActive("You")}
+          onClick={() => {setActive("You"); navigate("/mobilepro")}}
         />
       </nav>
     </div>
