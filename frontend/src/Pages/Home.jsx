@@ -14,7 +14,7 @@ import { GoVideo } from "react-icons/go";
 import { SiYoutubeshorts } from "react-icons/si";
 import { MdOutlineSubscriptions } from "react-icons/md";
 import logo from "../assets/playTube1.png";
-import { Outlet, useNavigate } from "react-router-dom";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import Profile from "../component/Profile";
 
@@ -23,6 +23,7 @@ const Home = () => {
   const [selectedItem, setSelectedItem] = useState("Home");
   const [active, setActive] = useState("Home");
   const navigate = useNavigate()
+  const location = useLocation()
   const { userData } = useSelector((state)=>state.user)
   const [popup, setPopup] = useState(false)
 
@@ -74,7 +75,7 @@ const Home = () => {
           <div className="flex items-center gap-3">
            {userData?.channel && <button className="hidden md:flex items-center gap-1 py-1 rounded-full bg-[#272727] px-3 cursor-pointer">
               <span className="text-lg">+</span>
-              <span>Create</span>
+              <span className="text-lg">Create</span>
             </button>}
             {!userData ?.photoUrl ? <FaUserCircle onClick={()=>setPopup(prev => !prev)} className="text-3xl hidden md:flex text-gray-400 cursor-pointer" /> : <img onClick={()=>setPopup(prev => !prev)} src={userData?.photoUrl} className="w-9 
             h-9 rounded-full object-cover border-1 border-gray-700 hidden md:flex"/>}
@@ -155,7 +156,6 @@ const Home = () => {
           sidebarOpen ? "md:ml-60" : "md:ml-20"
         }`}
       >
-      
        {location.pathname === "/" &&
        <>
           <div className="flex items-center gap-3 overflow-x-auto hide-scrollbar py-2">

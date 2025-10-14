@@ -6,6 +6,8 @@ import axios from "axios";
 import { serverUrl } from '../App';
 import ClipLoader from "react-spinners/ClipLoader";
 import { showCustomAlert } from '../component/CustomAlert';
+import { useDispatch } from 'react-redux';
+import { setUserData } from '../redux/userSlice';
 
 const SignUp = () => {
   const [step, setStep] = useState(1);
@@ -19,6 +21,7 @@ const SignUp = () => {
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
+  const dispatch = useDispatch()
 
   // ---------------- Validation functions ----------------
   const isEmailValid = (email) => {
@@ -93,6 +96,7 @@ const SignUp = () => {
       const res = await axios.post(`${serverUrl}/api/auth/signup`, formData, {
         withCredentials: true,
       });
+      dispatch(setUserData(res.data))
 
       if (res.data.success) {
         showCustomAlert(res.data.message || "Account Created");

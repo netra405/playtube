@@ -6,6 +6,8 @@ import { serverUrl } from '../App';
 import { showCustomAlert } from '../component/CustomAlert';
 import { useNavigate } from "react-router-dom";
 import ClipLoader from 'react-spinners/ClipLoader';
+import { useDispatch } from 'react-redux';
+import { setUserData } from '../redux/userSlice';
 
 const SignIn = () => {
   const [step, setStep] = useState(1);
@@ -14,6 +16,7 @@ const SignIn = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const dispatch = useDispatch()
 
   // ---------------- Validation functions ----------------
   const isEmailValid = (email) => {
@@ -41,32 +44,42 @@ const SignIn = () => {
 
   // ------------------ SignIn Handler ------------------
   const handleSignIn = async () => {
-    if (!password) {
-      showCustomAlert("Please fill your password");
-      return;
-    }
+  if (!email || !password) {
+    showCustomAlert("Please fill in both email and password");
+    return;
+  }
 
-    setLoading(true);
-    try {
-      const result = await axios.post(
-        `${serverUrl}/api/auth/signin`,
-        { email, password },
-        { withCredentials: true }
-      );
+  setLoading(true);
+  try {
+    const result = await axios.post(
+      `${serverUrl}/api/auth/signin`,
+      { email, password },
+      { withCredentials: true }
+    );
 
-      if (result.data.success) {
-        showCustomAlert(result.data.message || "Login successful!");
-        navigate("/");
-      } else {
-        showCustomAlert(result.data.message || "Login failed");
-      }
-    } catch (err) {
-      showCustomAlert(err.response?.data?.message || "Something went wrong");
-      console.error(err);
-    } finally {
-      setLoading(false);
+    // Save user data in Redux
+    dispatch(setUserData(result.data));
+
+    // Check for success
+    if (result.data.success) {
+      showCustomAlert(result.data.message || "Login successful!");
+      navigate("/");
+    } else {
+      showCustomAlert(result.data.message || "Login failed");
     }
-  };
+  } catch (error) {
+    // Handle API or network errors
+    const errorMessage =
+      error.response?.data?.message ||
+      error.message ||
+      "Something went wrong during sign-in";
+    showCustomAlert(errorMessage);
+    console.error("Sign-in error:", error);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <div className='flex items-center justify-center min-h-screen bg-[#181818] px-4'>
