@@ -1,8 +1,7 @@
-import uploadOnCloudinary from "../config/cloudinary.js";
 import User from "../model/userModel.js";
-import validator from "validator";
-import bcrypt from "bcryptjs";
 import genToken from "../config/token.js";
+import bcrypt from "bcryptjs";
+import validator from "validator";
 
 // ------------------ SIGN UP ------------------
 export const signUp = async (req, res) => {
@@ -10,30 +9,20 @@ export const signUp = async (req, res) => {
     const { userName, email, password } = req.body;
     let photoUrl;
 
-    // Upload image to Cloudinary if provided
     if (req.file) {
-      photoUrl = await uploadOnCloudinary(req.file.path);
+      photoUrl = req.file.path; // optional: can use Cloudinary if you want
     }
 
-    // Check if user already exists
+    // Check if user exists
     const existUser = await User.findOne({ email });
     if (existUser) {
       return res.status(400).json({ success: false, message: "User already exists" });
     }
 
-    // Validate email format
     if (!validator.isEmail(email)) {
       return res.status(400).json({ success: false, message: "Invalid Email" });
     }
 
-    // Validate email domain (example: only allow common domains)
-    const allowedDomains = ["gmail.com", "yahoo.com", "outlook.com"];
-    const emailDomain = email.split("@")[1];
-    if (!allowedDomains.includes(emailDomain)) {
-      return res.status(400).json({ success: false, message: "Email domain not allowed" });
-    }
-
-    // Validate password strength
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@#$%^&*!]).{8,}$/;
     if (!passwordRegex.test(password)) {
       return res.status(400).json({
@@ -43,10 +32,8 @@ export const signUp = async (req, res) => {
       });
     }
 
-    // Hash password
     const hashPassword = await bcrypt.hash(password, 10);
 
-    // Create user
     const user = await User.create({
       userName,
       email,
@@ -54,29 +41,19 @@ export const signUp = async (req, res) => {
       photoUrl,
     });
 
-    // Generate token
     const token = genToken(user._id);
 
-    // Set cookie
     res.cookie("token", token, {
       httpOnly: true,
-      secure: false, // set true in production
+      secure: process.env.NODE_ENV === "production",
       sameSite: "Strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    return res.status(201).json({
-      success: true,
-      message: "User registered successfully",
-      user: {
-        id: user._id,
-        userName: user.userName,
-        email: user.email,
-        photoUrl: user.photoUrl,
-      },
-    });
+    return res.status(201).json({ success: true, message: "User registered", user });
   } catch (error) {
-    return res.status(500).json({ success: false, message: `signUp error: ${error.message}` });
+    console.error(error);
+    return res.status(500).json({ success: false, message: error.message });
   }
 };
 
@@ -84,43 +61,24 @@ export const signUp = async (req, res) => {
 export const signIn = async (req, res) => {
   try {
     const { email, password } = req.body;
-
-    // Validate email format on login
-    if (!validator.isEmail(email)) {
-      return res.status(400).json({ success: false, message: "Invalid Email" });
-    }
-
     const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(400).json({ success: false, message: "User not found" });
-    }
+    if (!user) return res.status(404).json({ success: false, message: "User not found" });
 
     const matchPassword = await bcrypt.compare(password, user.password);
-    if (!matchPassword) {
-      return res.status(400).json({ success: false, message: "Incorrect Password" });
-    }
+    if (!matchPassword) return res.status(400).json({ success: false, message: "Incorrect password" });
 
     const token = genToken(user._id);
-
     res.cookie("token", token, {
       httpOnly: true,
-      secure: false,
+      secure: process.env.NODE_ENV === "production",
       sameSite: "Strict",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    return res.status(200).json({
-      success: true,
-      message: "Sign in successful",
-      user: {
-        id: user._id,
-        userName: user.userName,
-        email: user.email,
-        photoUrl: user.photoUrl,
-      },
-    });
+    return res.status(200).json({ success: true, message: "Sign in successful", user });
   } catch (error) {
-    return res.status(500).json({ success: false, message: `signIn error: ${error.message}` });
+    console.error(error);
+    return res.status(500).json({ success: false, message: error.message });
   }
 };
 
@@ -130,54 +88,47 @@ export const signOut = async (req, res) => {
     res.clearCookie("token");
     return res.status(200).json({ success: true, message: "Sign out successful" });
   } catch (error) {
-    return res.status(500).json({ success: false, message: `signOut error: ${error.message}` });
+    console.error(error);
+    return res.status(500).json({ success: false, message: error.message });
   }
 };
 
-
-export const googleAuth = async (req,res)=>{
+// ------------------ GOOGLE AUTH ------------------
+export const googleAuth = async (req, res) => {
   try {
-    
-    const {userName, email, photoUrl} = req.body;
-    let googlePhoto = photoUrl
+    const { userName, email, photoUrl } = req.body;
 
-    if (photoUrl) {
-      try {
-        
-        googlePhoto = await uploadOnCloudinary(photoUrl)
+    if (!email) return res.status(400).json({ success: false, message: "Email required" });
 
-      } catch (error) {
-        console.log("Cloudinary upload failed")
-      }
-    }
-    const user = await User.findOne({email})
+    let user = await User.findOne({ email });
+
     if (!user) {
-      await User.create({
-        userName,
+      // New user
+      user = await User.create({
+        userName: userName || "Google User",
         email,
-        photoUrl:googlePhoto
-      })
-    } else{
-      if (!user.photoUrl && googlePhoto) {
-        user.photoUrl = googlePhoto
-        await user.save()
+        photoUrl: photoUrl || null, // save actual Google photo
+      });
+    } else {
+      // Update photo if changed
+      if (photoUrl && user.photoUrl !== photoUrl) {
+        user.photoUrl = photoUrl;
+        await user.save();
       }
     }
 
-     // Generate token
     const token = genToken(user._id);
 
-    // Set cookie
     res.cookie("token", token, {
       httpOnly: true,
-      secure: false, // set true in production
+      secure: process.env.NODE_ENV === "production",
       sameSite: "Strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
-     return res.status(201).json(user)
 
-
+    return res.status(200).json({ success: true, message: "Google auth successful", user });
   } catch (error) {
-     return res.status(500).json({ success: false, message: `GoogleAuth error: ${error.message}` });
+    console.error(error);
+    return res.status(500).json({ success: false, message: error.message });
   }
-}
+};

@@ -1,12 +1,19 @@
-import express from "express"
-import upload from "../middleware/multer.js"
-import { googleAuth, signIn, signOut, signUp } from "../controller/authController.js";
+import express from "express";
+import upload from "../middleware/multer.js";
+import { signUp, signIn, signOut, googleAuth } from "../controller/authController.js";
 
-const authRouter = express.Router()
+const router = express.Router();
 
-authRouter.post("/signup", upload.single("photoUrl"), signUp)
-authRouter.post("/signin",  signIn)
-authRouter.get("/signout",  signOut)
-authRouter.post("/googleauth", upload.single("photoUrl", googleAuth))
+// Regular signup with optional photo upload
+router.post("/signup", upload.single("photoUrl"), signUp);
 
-export default authRouter
+// Email/password login
+router.post("/signin", signIn);
+
+// Sign out
+router.get("/signout", signOut);
+
+// Google authentication (no multer because Google sends URL, not file)
+router.post("/googleauth", googleAuth);
+
+export default router;
