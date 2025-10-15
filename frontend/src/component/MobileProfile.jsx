@@ -1,5 +1,5 @@
 import React from 'react'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
 import { FiLogOut } from "react-icons/fi";
 import { MdOutlineSwitchAccount } from "react-icons/md";
@@ -13,9 +13,56 @@ import {
   FaList,
   FaThumbsUp,
 } from "react-icons/fa";
+import { useNavigate } from 'react-router-dom';
+import { setUserData } from '../redux/userSlice';
+import axios from 'axios';
+import { serverUrl } from '../App';
+import { showCustomAlert } from './CustomAlert';
+import { signInWithPopup } from 'firebase/auth';
+import { auth, provider } from '../../utlis/firebase';
 
 const MobileProfile = () => {
     const {userData} = useSelector(state=>state.user)
+    const navigate = useNavigate()
+     const dispatch = useDispatch();
+
+  // Sign out
+  const handleSignout = async () => {
+    try {
+      await axios.get(`${serverUrl}/api/auth/signout`, { withCredentials: true });
+      dispatch(setUserData(null));
+      showCustomAlert("Sign Out Successfully");
+    } catch (err) {
+      console.log(err);
+      showCustomAlert("Sign Out error");
+    }
+  };
+
+  // Google Sign-In
+  const handleGoogleAuth = async () => {
+    try {
+      const response = await signInWithPopup(auth, provider);
+      const user = response.user;
+
+      const payload = {
+        userName: user.displayName,
+        email: user.email,
+        photoUrl: user.photoURL,
+      };
+
+      const result = await axios.post(
+        `${serverUrl}/api/auth/googleauth`,
+        payload,
+        { withCredentials: true }
+      );
+
+      dispatch(setUserData(result.data.user));
+      showCustomAlert("Google Authentication Successfully");
+    } catch (err) {
+      console.log(err);
+      showCustomAlert("Google Auth error");
+    }
+  };
   return (
 
     
@@ -32,11 +79,11 @@ const MobileProfile = () => {
         </div>}
             {/* auth buutton */}
             <div className='flex gap-2 p-4 border-b border-gray-800 overflow-auto'>
-                <button className='bg-gray-800 text-nowrap px-3 py-1 rounded-2xl text-sm flex items-center justify-center gap-2'><FcGoogle className='text-xl'/>Sign In with Google Account</button>
-                <button className='bg-gray-800 text-nowrap px-3 py-1 rounded-2xl text-sm flex items-center justify-center gap-2'><TiUserAddOutline className='text-xl'/>Create new Account</button>
-                <button className='bg-gray-800 text-nowrap px-3 py-1 rounded-2xl text-sm flex items-center justify-center gap-2'><MdOutlineSwitchAccount className='text-xl'/>Sign In with your Account</button>
+                <button onClick={handleGoogleAuth} className='bg-gray-800 text-nowrap px-3 py-1 rounded-2xl text-sm flex items-center justify-center gap-2'><FcGoogle className='text-xl'/>Sign In with Google Account</button>
+                <button onClick={()=>navigate("/signup")} className='bg-gray-800 text-nowrap px-3 py-1 rounded-2xl text-sm flex items-center justify-center gap-2'><TiUserAddOutline className='text-xl'/>Create new Account</button>
+                <button onClick={()=>navigate("/signin")} className='bg-gray-800 text-nowrap px-3 py-1 rounded-2xl text-sm flex items-center justify-center gap-2'><MdOutlineSwitchAccount className='text-xl'/>Sign In with your Account</button>
                 <button className='bg-gray-800 text-nowrap px-3 py-1 rounded-2xl text-sm flex items-center justify-center gap-2'><SiYoutubestudio className='text-xl text-orange-400'/>PT Studio</button>
-                <button className='bg-gray-800 text-nowrap px-3 py-1 rounded-2xl text-sm flex items-center justify-center gap-2'><FiLogOut className='text-xl'/>Sign Out</button>
+                <button onClick={handleSignout} className='bg-gray-800 text-nowrap px-3 py-1 rounded-2xl text-sm flex items-center justify-center gap-2'><FiLogOut className='text-xl'/>Sign Out</button>
             </div>
 
             <div className='flex flex-col mt-[20px]'>

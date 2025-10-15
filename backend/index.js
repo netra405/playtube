@@ -2,9 +2,9 @@ import express from "express";
 import dotenv from "dotenv";
 import connectDb from "./config/db.js";
 import authRouter from "./route/authRoute.js";
+import userRouter from "./route/userRoute.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
-import userRouter from "./route/userRoute.js";
 
 dotenv.config();
 
@@ -14,12 +14,16 @@ const port = process.env.PORT || 4000;
 // Middlewares
 app.use(cookieParser());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(
   cors({
     origin: "http://localhost:5173",
     credentials: true,
   })
 );
+
+// Serve static files (for multer uploaded images)
+app.use("/public", express.static("public"));
 
 // Routes
 app.use("/api/auth", authRouter);

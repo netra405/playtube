@@ -144,7 +144,7 @@ const SignIn = () => {
               <label className='text-gray-300 cursor-pointer text-sm sm:text-base' htmlFor="showpass">Show Password</label>
             </div>
             <div className='flex justify-between items-center mt-6 sm:mt-10'>
-              <button className='text-orange-400 text-sm sm:text-base hover:underline'>Forget password</button>
+              <button onClick={()=>navigate("/forgetpass")} className='text-orange-400 text-sm sm:text-base hover:underline'>Forget password</button>
               <button onClick={handleSignIn} disabled={loading} className='bg-orange-500 hover:bg-orange-600 px-4 sm:px-6 py-2 sm:py-2.5 rounded-full text-white text-sm sm:text-base flex items-center justify-center gap-2'>
                 {loading ? <ClipLoader color='black' size={20}/> :"Sign In"}
               </button>
