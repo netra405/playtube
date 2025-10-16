@@ -68,7 +68,7 @@ const ForgetPassword = () => {
     return (
         <div className='min-h-screen flex flex-col bg-[#202124] text-white'>
             <header className='flex items-center gap-2 p-4 border-b border-gray-700'>
-                <img className='w-8 h-8' src={logo} alt="" />
+                <img className='w-8 h-8 object-cover' src={logo} alt="" />
                 <span className="text-white font-bold text-xl tracking-tight font-roboto">
                     PlayTube
                 </span>

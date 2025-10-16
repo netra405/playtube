@@ -22,9 +22,9 @@ import { signInWithPopup } from 'firebase/auth';
 import { auth, provider } from '../../utlis/firebase';
 
 const MobileProfile = () => {
-    const {userData} = useSelector(state=>state.user)
-    const navigate = useNavigate()
-     const dispatch = useDispatch();
+  const { userData } = useSelector(state => state.user)
+  const navigate = useNavigate()
+  const dispatch = useDispatch();
 
   // Sign out
   const handleSignout = async () => {
@@ -65,45 +65,89 @@ const MobileProfile = () => {
   };
   return (
 
-    
-    <div className=' md:hidden bg-[#0f0f0f] text-white h-[100%] w-[100%] flex flex-col pt-[10px] p-[10px]'>
 
-        {/* top profile section */}
-       {userData && <div className='p-4 flex items-center gap-4 border-b border-gray-800'>
-                {userData?.photoUrl && <img className='w-16 h-16 rounded-full object-cover' src={userData?.photoUrl} alt="" />}
-                <div className='flex flex-col'>
-                    <span className='font-semibold text-lg'>{userData?.userName}</span>
-                    <span className='text-gray-400 text-sm'>{userData?.email}</span>
-                    <p className='text-sm text-blue-400 cursor-pointer hover:underline'>{userData?.channel ? "view channel" : "create channel"}</p>
-                </div>
-        </div>}
-            {/* auth buutton */}
-            <div className='flex gap-2 p-4 border-b border-gray-800 overflow-auto'>
-                <button onClick={handleGoogleAuth} className='bg-gray-800 text-nowrap px-3 py-1 rounded-2xl text-sm flex items-center justify-center gap-2'><FcGoogle className='text-xl'/>Sign In with Google Account</button>
-                <button onClick={()=>navigate("/signup")} className='bg-gray-800 text-nowrap px-3 py-1 rounded-2xl text-sm flex items-center justify-center gap-2'><TiUserAddOutline className='text-xl'/>Create new Account</button>
-                <button onClick={()=>navigate("/signin")} className='bg-gray-800 text-nowrap px-3 py-1 rounded-2xl text-sm flex items-center justify-center gap-2'><MdOutlineSwitchAccount className='text-xl'/>Sign In with your Account</button>
-                <button className='bg-gray-800 text-nowrap px-3 py-1 rounded-2xl text-sm flex items-center justify-center gap-2'><SiYoutubestudio className='text-xl text-orange-400'/>PT Studio</button>
-                <button onClick={handleSignout} className='bg-gray-800 text-nowrap px-3 py-1 rounded-2xl text-sm flex items-center justify-center gap-2'><FiLogOut className='text-xl'/>Sign Out</button>
-            </div>
+    <div className="bg-[#0f0f0f] text-white h-full w-full flex flex-col pt-3 p-3 md:p-5 md:pt-5 md:rounded-xl md:max-w-md mx-auto overflow-y-auto">
 
-            <div className='flex flex-col mt-[20px]'>
-                <ProfileMenuItem icon={<FaHistory/>} text={"History"}/>
-                <ProfileMenuItem icon={<FaList/>} text={"Playlists"}/>
-                <ProfileMenuItem icon={<GoVideo/>} text={"Save Videos"}/>
-                <ProfileMenuItem icon={<FaThumbsUp/>} text={"Liked Videos"}/>
-                <ProfileMenuItem icon={<SiYoutubestudio/>} text={"PT Studio"}/>
-            </div>
+  {/* Top profile section */}
+  {userData && (
+    <div className="p-3 flex items-center gap-4 border-b border-gray-800">
+      {userData?.photoUrl && (
+        <img
+          className="w-14 h-14 md:w-16 md:h-16 rounded-full object-cover"
+          src={
+            userData?.photoUrl?.startsWith("http")
+              ? userData.photoUrl
+              : `${serverUrl}${userData.photoUrl}`
+          }
+          alt=""
+        />
+      )}
+      <div className="flex flex-col">
+        <span className="font-semibold text-base md:text-lg">{userData?.userName}</span>
+        <span className="text-gray-400 text-sm md:text-base">{userData?.email}</span>
+        <p
+          className="text-sm md:text-base text-blue-400 cursor-pointer hover:underline"
+          onClick={() => {
+            userData?.channel ? navigate("/viewchannel") : navigate("/createchannel");
+          }}
+        >
+          {userData?.channel ? "View Channel" : "Create Channel"}
+        </p>
+      </div>
     </div>
+  )}
+
+  {/* Auth buttons */}
+  <div className="flex flex-wrap gap-2 p-3 border-b border-gray-800 overflow-x-auto md:overflow-hidden">
+    <button
+      onClick={handleGoogleAuth}
+      className="bg-gray-800 px-3 py-2 rounded-2xl text-xs md:text-sm flex items-center justify-center gap-2 whitespace-nowrap hover:bg-gray-700 transition-all"
+    >
+      <FcGoogle className="text-lg md:text-xl" /> Sign In with Google
+    </button>
+    <button
+      onClick={() => navigate("/signup")}
+      className="bg-gray-800 px-3 py-2 rounded-2xl text-xs md:text-sm flex items-center justify-center gap-2 whitespace-nowrap hover:bg-gray-700 transition-all"
+    >
+      <TiUserAddOutline className="text-lg md:text-xl" /> Create Account
+    </button>
+    <button
+      onClick={() => navigate("/signin")}
+      className="bg-gray-800 px-3 py-2 rounded-2xl text-xs md:text-sm flex items-center justify-center gap-2 whitespace-nowrap hover:bg-gray-700 transition-all"
+    >
+      <MdOutlineSwitchAccount className="text-lg md:text-xl" /> Sign In
+    </button>
+    <button className="bg-gray-800 px-3 py-2 rounded-2xl text-xs md:text-sm flex items-center justify-center gap-2 whitespace-nowrap hover:bg-gray-700 transition-all">
+      <SiYoutubestudio className="text-lg md:text-xl text-orange-400" /> PT Studio
+    </button>
+    <button
+      onClick={handleSignout}
+      className="bg-gray-800 px-3 py-2 rounded-2xl text-xs md:text-sm flex items-center justify-center gap-2 whitespace-nowrap hover:bg-gray-700 transition-all"
+    >
+      <FiLogOut className="text-lg md:text-xl" /> Sign Out
+    </button>
+  </div>
+
+  {/* Menu Items */}
+  <div className="flex flex-col mt-4 md:mt-6 space-y-2">
+    <ProfileMenuItem icon={<FaHistory />} text={"History"} />
+    <ProfileMenuItem icon={<FaList />} text={"Playlists"} />
+    <ProfileMenuItem icon={<GoVideo />} text={"Saved Videos"} />
+    <ProfileMenuItem icon={<FaThumbsUp />} text={"Liked Videos"} />
+    <ProfileMenuItem icon={<SiYoutubestudio />} text={"PT Studio"} />
+  </div>
+</div>
+
   )
 }
 
-function ProfileMenuItem ({icon, text, onClick}) {
-    return(
-        <button onClick={onClick} className='w-full rounded-2xl flex items-center gap-3 p-4 active:bg-[#272727] text-left'>
-            <span className='text-lg'>{icon}</span>
-            <span className='text-sm'>{text}</span>
-        </button>
-    )
+function ProfileMenuItem({ icon, text, onClick }) {
+  return (
+    <button onClick={onClick} className='w-full rounded-2xl flex items-center gap-3 p-4 active:bg-[#272727] text-left'>
+      <span className='text-lg'>{icon}</span>
+      <span className='text-sm'>{text}</span>
+    </button>
+  )
 }
 
 export default MobileProfile
