@@ -201,7 +201,7 @@
 
 
 import User from "../model/userModel.js";
-import genToken from "../config/token.js";
+import genToken from "../config/token.js"
 import bcrypt from "bcryptjs";
 import validator from "validator";
 import sendMail from "../config/sendMail.js";
@@ -210,49 +210,39 @@ import sendMail from "../config/sendMail.js";
 export const signUp = async (req, res) => {
   try {
     const { userName, email, password } = req.body;
-    let photoUrl = req.file ? `/public/${req.file.filename}` : null;
+    const photoUrl = req.file ? `/public/${req.file.filename}` : "";
 
     // Check if user exists
     const existUser = await User.findOne({ email });
-    if (existUser) {
-      return res.status(400).json({ success: false, message: "User already exists" });
-    }
+    if (existUser) return res.status(400).json({ success: false, message: "User already exists" });
 
-    if (!validator.isEmail(email)) {
-      return res.status(400).json({ success: false, message: "Invalid Email" });
-    }
+    // Validate email
+    if (!validator.isEmail(email)) return res.status(400).json({ success: false, message: "Invalid Email" });
 
+    // Validate password
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@#$%^&*!]).{8,}$/;
     if (!passwordRegex.test(password)) {
       return res.status(400).json({
         success: false,
-        message:
-          "Password must be at least 8 characters and include uppercase, lowercase, number, and special character (@#$%^&*!)",
+        message: "Password must be at least 8 characters and include uppercase, lowercase, number, and special character (@#$%^&*!)",
       });
     }
 
     const hashPassword = await bcrypt.hash(password, 10);
 
-    const user = await User.create({
-      userName,
-      email,
-      password: hashPassword,
-      photoUrl,
-    });
-
+    const user = await User.create({ userName, email, password: hashPassword, photoUrl });
     const token = genToken(user._id);
 
     res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "Strict",
+      sameSite: "Lax",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    return res.status(201).json({ success: true, message: "User registered", user });
+    res.status(201).json({ success: true, message: "User registered", user });
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
@@ -270,14 +260,13 @@ export const signIn = async (req, res) => {
     res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "Strict",
+      sameSite: "Lax",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    return res.status(200).json({ success: true, message: "Sign in successful", user });
+    res.status(200).json({ success: true, message: "Sign in successful", user });
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
@@ -285,46 +274,65 @@ export const signIn = async (req, res) => {
 export const signOut = async (req, res) => {
   try {
     res.clearCookie("token");
-    return res.status(200).json({ success: true, message: "Sign out successful" });
+    res.status(200).json({ success: true, message: "Sign out successful" });
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
-// ------------------ GOOGLE AUTH ------------------
+
+// -------google auth
 export const googleAuth = async (req, res) => {
   try {
     const { userName, email, photoUrl } = req.body;
-    if (!email) return res.status(400).json({ success: false, message: "Email required" });
 
+    if (!email) {
+      return res.status(400).json({ success: false, message: "Email is required" });
+    }
+
+    // Check if user exists
     let user = await User.findOne({ email });
 
     if (!user) {
-      user = await User.create({
+      // Create new Google user properly using `new User()` and save
+      user = new User({
         userName: userName || "Google User",
         email,
-        photoUrl: photoUrl || null,
+        photoUrl: photoUrl || "",
       });
-    } else if (photoUrl && user.photoUrl !== photoUrl) {
-      user.photoUrl = photoUrl;
-      await user.save();
+      await user.save(); // <-- Important! Must await save()
+      console.log("🟢 New Google user created:", user);
+    } else {
+      // Update photo if changed
+      if (photoUrl && user.photoUrl !== photoUrl) {
+        user.photoUrl = photoUrl;
+        await user.save();
+        console.log("🟡 Existing user's photo updated");
+      }
     }
 
+    // Generate JWT token
     const token = genToken(user._id);
+
+    // Set cookie
     res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "Strict",
+      sameSite: "Lax",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    return res.status(200).json({ success: true, message: "Google auth successful", user });
+    return res.status(200).json({
+      success: true,
+      message: "Google auth successful",
+      user,
+    });
   } catch (error) {
-    console.error(error);
+    console.error("❌ Google Auth Error:", error);
     return res.status(500).json({ success: false, message: error.message });
   }
 };
+
 
 // ------------------ SEND OTP ------------------
 export const sendOtp = async (req, res) => {
@@ -335,15 +343,15 @@ export const sendOtp = async (req, res) => {
 
     const otp = Math.floor(1000 + Math.random() * 9000).toString();
     user.resetOtp = otp;
-    user.otpExpires = Date.now() + 5 * 60 * 1000; // 5 min
+    user.otpExpires = Date.now() + 5 * 60 * 1000;
     user.isOtpVerifed = false;
 
     await user.save();
     await sendMail(email, otp);
 
-    return res.status(200).json({ message: "OTP sent successfully" });
+    res.status(200).json({ success: true, message: "OTP sent successfully" });
   } catch (error) {
-    return res.status(500).json({ message: `OTP send error: ${error.message}` });
+    res.status(500).json({ success: false, message: `OTP send error: ${error.message}` });
   }
 };
 
@@ -354,7 +362,7 @@ export const verifyOtp = async (req, res) => {
     const user = await User.findOne({ email });
 
     if (!user || user.resetOtp !== otp || user.otpExpires < Date.now()) {
-      return res.status(400).json({ message: "Invalid OTP" });
+      return res.status(400).json({ success: false, message: "Invalid OTP" });
     }
 
     user.resetOtp = undefined;
@@ -362,9 +370,9 @@ export const verifyOtp = async (req, res) => {
     user.isOtpVerifed = true;
     await user.save();
 
-    return res.status(200).json({ message: "OTP verified successfully" });
+    res.status(200).json({ success: true, message: "OTP verified successfully" });
   } catch (error) {
-    return res.status(500).json({ message: `OTP verification error: ${error.message}` });
+    res.status(500).json({ success: false, message: `OTP verification error: ${error.message}` });
   }
 };
 
@@ -374,16 +382,14 @@ export const resetPassword = async (req, res) => {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
 
-    if (!user || !user.isOtpVerifed) {
-      return res.status(400).json({ message: "OTP verification required" });
-    }
+    if (!user || !user.isOtpVerifed) return res.status(400).json({ success: false, message: "OTP verification required" });
 
     user.password = await bcrypt.hash(password, 10);
     user.isOtpVerifed = false;
     await user.save();
 
-    return res.status(200).json({ message: "Password reset successfully" });
+    res.status(200).json({ success: true, message: "Password reset successfully" });
   } catch (error) {
-    return res.status(500).json({ message: `Password reset error: ${error.message}` });
+    res.status(500).json({ success: false, message: `Password reset error: ${error.message}` });
   }
 };

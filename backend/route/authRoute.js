@@ -1,6 +1,6 @@
 import express from "express";
 import upload from "../middleware/multer.js";
-import { signUp, signIn, signOut, googleAuth, sendOtp, verifyOtp, resetPassword } from "../controller/authController.js";
+import { signUp, signIn, signOut, sendOtp, verifyOtp, resetPassword, googleAuth } from "../controller/authController.js";
 
 const router = express.Router();
 

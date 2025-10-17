@@ -1,12 +1,13 @@
 import axios from 'axios'
 import React, { useEffect } from 'react'
 import { serverUrl } from '../App'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { setUserData } from '../redux/userSlice'
 
 const GetCurrentUser = () => {
 
     const dispatch = useDispatch()
+    const {channelData} = useSelector(state => state.user)
 
  useEffect(()=>{
     const fetchUser = async ()=>{
@@ -20,7 +21,7 @@ const GetCurrentUser = () => {
         }
     }
     fetchUser()
- },[])
+ },[channelData])
 }
 
 export default GetCurrentUser

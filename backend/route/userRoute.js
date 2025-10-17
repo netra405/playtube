@@ -1,6 +1,6 @@
 import express from "express"
 import isAuth from "../middleware/isAuth.js"
-import { createChannel, getCurrentUser } from "../controller/userController.js"
+import { createChannel, getChannelData, getCurrentUser, updateChannel } from "../controller/userController.js"
 import upload from "../middleware/multer.js"
 
 const userRouter = express.Router()
@@ -11,5 +11,11 @@ userRouter.post("/createChannel", isAuth, upload.fields([
     {name: "banner", maxCount: 1}
 
 ]) , createChannel)
+userRouter.get("/getchannel", isAuth, getChannelData)
+userRouter.post("/updatechannel", isAuth, upload.fields([
+   { name: "avatar", maxCount: 1},
+    {name: "banner", maxCount: 1}
+
+]) , updateChannel)
 
 export default userRouter
