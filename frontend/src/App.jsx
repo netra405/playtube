@@ -13,6 +13,7 @@ import ViewChannel from "./Pages/Channel/ViewChannel";
 import GetChannelData from "./customHooks/GetChannelData";
 import UpdateChannel from "./Pages/Channel/UpdateChannel";
 import { useSelector } from "react-redux";
+import CreatePage from "./Pages/CreatePage";
 
 export const serverUrl = "http://localhost:8000";
 
@@ -64,6 +65,15 @@ const App = () => {
             element={
               <ProtectRoute userData={userData}>
                 <UpdateChannel />
+              </ProtectRoute>
+            }
+          />
+
+            <Route
+            path="/create"
+            element={
+              <ProtectRoute userData={userData}>
+                <CreatePage />
               </ProtectRoute>
             }
           />
