@@ -295,6 +295,9 @@ const Home = () => {
     "Vlogs",
   ];
 
+
+  
+
   return (
     <div className="bg-[#0f0f0f] text-white min-h-screen relative">
       {/* Navbar */}
@@ -336,12 +339,12 @@ const Home = () => {
           {/* Right */}
           <div className="flex items-center gap-3">
             {userData?.channel && (
-              <button onClick={()=>navigate("/create")} className="hidden md:flex items-center gap-1 py-1 rounded-full bg-[#272727] px-3 cursor-pointer">
+              <button onClick={() => navigate("/create")} className="hidden md:flex items-center gap-1 py-1 rounded-full bg-[#272727] px-3 cursor-pointer">
                 <span className="text-lg">+</span>
                 <span className="text-lg">Create</span>
               </button>
             )}
-            {!userData?.photoUrl ? (
+            {/* {!userData?.photoUrl ? (
               <FaUserCircle
                 onClick={() => setPopup((prev) => !prev)}
                 className="text-3xl hidden md:flex text-gray-400 cursor-pointer"
@@ -356,7 +359,27 @@ const Home = () => {
                 }
                 className="w-9 h-9 rounded-full object-cover border-1 border-gray-700 hidden md:flex"
               />
+            )} */}
+            {userData && userData.photoUrl ? (
+              <img
+                src={userData.photoUrl}
+                alt="User Avatar"
+                onClick={() => setPopup((prev) => !prev)}
+                className="w-9 h-9 rounded-full object-cover border border-gray-700 hidden md:flex cursor-pointer"
+                onError={(e) => {
+                  // fallback if Google image fails to load
+                  e.target.onerror = null;
+                  e.target.src = "/default-avatar.png";
+                }}
+              />
+            ) : (
+              <FaUserCircle
+                onClick={() => setPopup((prev) => !prev)}
+                className="text-3xl hidden md:flex text-gray-400 cursor-pointer"
+              />
             )}
+
+
             <FaSearch className="text-lg md:hidden flex" />
           </div>
         </div>
@@ -436,9 +459,8 @@ const Home = () => {
 
       {/* Main content */}
       <main
-        className={`transition-all duration-300 pt-[70px] p-6 ${
-          sidebarOpen ? "md:ml-60" : "md:ml-20"
-        }`}
+        className={`transition-all duration-300 pt-[70px] p-6 ${sidebarOpen ? "md:ml-60" : "md:ml-20"
+          }`}
       >
         {location.pathname === "/" && (
           <>
@@ -480,7 +502,7 @@ const Home = () => {
         <MobileNavButton
           icon={<IoIosAddCircle size={28} />}
           active={active === "+"}
-          onClick={() => {setActive("+"); navigate("/create")}}
+          onClick={() => { setActive("+"); navigate("/create") }}
         />
         <MobileNavButton
           icon={<MdOutlineSubscriptions />}
@@ -507,9 +529,10 @@ const Home = () => {
           active={active === "You"}
           onClick={() => {
             setActive("You");
-            navigate("/mobilepro");
+            navigate("/mobilepro"); // just navigate, don't check login here
           }}
         />
+
       </nav>
     </div>
   );
@@ -520,9 +543,8 @@ function SidebarItem({ icon, text, open, selected, onClick }) {
   return (
     <button
       onClick={onClick}
-      className={`flex items-center gap-4 p-2 rounded w-full transition-colors ${
-        open ? "justify-start" : "justify-center"
-      } ${selected ? "bg-[#272727]" : "hover:bg-[#272727]"}`}
+      className={`flex items-center gap-4 p-2 rounded w-full transition-colors ${open ? "justify-start" : "justify-center"
+        } ${selected ? "bg-[#272727]" : "hover:bg-[#272727]"}`}
     >
       <span className="text-lg">{icon}</span>
       {open && <span className="text-sm">{text}</span>}
@@ -535,9 +557,8 @@ function MobileNavButton({ icon, text, onClick, active }) {
   return (
     <button
       onClick={onClick}
-      className={`flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-lg transition-all duration-300 ${
-        active ? "text-white" : "text-gray-400"
-      } hover:scale-105`}
+      className={`flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-lg transition-all duration-300 ${active ? "text-white" : "text-gray-400"
+        } hover:scale-105`}
     >
       <span className="text-2xl">{icon}</span>
       {text && <span className="text-xs">{text}</span>}

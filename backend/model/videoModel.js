@@ -1,109 +1,75 @@
-import mongoose from "mongoose"
+import mongoose from "mongoose";
 
+// Reply Schema
 const replySchema = new mongoose.Schema({
+  author: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true
+  },
+  message: {
+    type: String,
+    required: true
+  }
+}, { timestamps: true });
 
-    auuthor: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-    },
-    message: {
-        type: String,
-        required: true
-    },
-    createAt: {
-        type: Date,
-        default: Date.now
-    },
-    updatedAt: {
-        type: Date
-    }
-
-
-}, { _id: true })
-
+// Comment Schema
 const commentSchema = new mongoose.Schema({
+  author: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true
+  },
+  message: {
+    type: String,
+    required: true
+  },
+  replies: [replySchema]
+}, { timestamps: true });
 
-
-    auuthor: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-    },
-    message: {
-        type: String,
-        required: true
-    },
-    replies: {
-        replySchema
-    },
-    createAt: {
-        type: Date,
-        default: Date.now
-    },
-    updatedAt: {
-        type: Date
-    }
-
-
-
-}, { _id: true })
-
+// Video Schema
 const videoSchema = new mongoose.Schema({
+  channel: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Channel",
+    required: true
+  },
+  title: {
+    type: String,
+    required: true
+  },
+  description: {
+    type: String,
+    default: ""
+  },
+  videoUrl: {
+    type: String,
+    default: ""
+  },
+  thumbnail: {
+    type: String,
+    required: true
+  },
+  tags: [String],
+  views: {
+    type: Number,
+    default: 0
+  },
+  likes: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User"
+  }],
+  dislikes: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User"
+  }],
+  saveBy: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User"
+  }],
+  comments: [commentSchema]
+}, { timestamps: true });
 
-    channel: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Channel",
-        required: true
-    },
-    title: {
-        type: String,
-        required: true
-    },
-    description: {
-        type: String,
-        default: ""
-    },
-    videoUrl: {
-        type: String,
-        default: ""
-    },
-    thumbnail: {
-        type: String,
-        required: true
-    },
-    tags: [{
-        type: String
-    }],
+const Video = mongoose.model("Video", videoSchema);
 
-    views: {
-        type: Number,
-        default: 0
-    },
-    likes: [
-        {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "User"
-        }
-    ],
-    dislikes: [
-        {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "User"
-        }
-    ],
-    saveBy: [
-        {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "User"
-        }
-    ],
-    comments: {
-        commentSchema
-    }
-
-
-
-}, { timestamps: true })
-
-const Video = mongoose.Model("Video", videoSchema)
-
-export default Video
+export default Video;

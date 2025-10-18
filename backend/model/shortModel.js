@@ -100,6 +100,6 @@ const shortSchema = new mongoose.Schema({
 
 },{timestamps:true})
 
-const Short = mongoose.Model("Short", shortSchema)
+const Short = mongoose.model("Short", shortSchema)
 
 export default Short

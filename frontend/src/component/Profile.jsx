@@ -317,7 +317,7 @@ const Profile = () => {
       showCustomAlert("Google Authentication Successful");
     } catch (err) {
       console.error("Google Auth error:", err);
-      showCustomAlert("Google Auth error");
+      showCustomAlert(`Google Auth error ${err}`);
     }
   };
 

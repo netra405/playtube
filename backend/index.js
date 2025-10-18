@@ -5,6 +5,7 @@ import authRouter from "./route/authRoute.js";
 import userRouter from "./route/userRoute.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
+import contentRouter from "./route/contentRoute.js";
 
 dotenv.config();
 
@@ -28,6 +29,7 @@ app.use("/public", express.static("public"));
 // Routes
 app.use("/api/auth", authRouter);
 app.use("/api/user", userRouter);
+app.use("/api/content", contentRouter)
 
 // Start server only after DB connection
 const startServer = async () => {
