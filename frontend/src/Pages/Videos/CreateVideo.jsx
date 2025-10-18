@@ -57,7 +57,7 @@ const CreateVideo = () => {
   }
 
   return (
-    <div className='w-full min-h-[80vh] bg-[#0f0f0f] text-white flex flex-col pt-5'>
+    <div className='w-full min-h-[8vh] bg-[#0f0f0f] text-white flex flex-col pt-5'>
       <div className='flex flex-1 justify-center items-center px-4 py-6'>
         <div className='bg-[#212121] p-6 rounded-xl w-fll max-w-2xl shadow-lg space-y-6'>
             <label htmlFor="video" className='cursor-pointer border-2 border-dashed border-gray-600 rounded-lg flex flex-col items-center justify-center p-1 hover:border-orange-500 transition'>

@@ -46,7 +46,7 @@ const CreatePage = () => {
 
 
     return (
-        <div className="bg-[#0f0f0f] min-h-screen text-white px-4 sm:px-6 lg:px-12 py-8 mt-10 flex flex-col">
+        <div className="bg-[#0f0f0f] mb-10 min-h-screen text-white px-4 sm:px-6 lg:px-12 py-8 mt-2 flex flex-col">
             {/* Header */}
             <header className="mb-12 border-b border-[#3f3f3f] pb-4 text-center sm:text-left">
                 <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">Create</h1>

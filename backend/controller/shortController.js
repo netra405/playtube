@@ -39,7 +39,7 @@ export const createShort = async (req, res) => {
 
 export const getAllShorts = async (req,res) => {
     try {
-        const shorts = await Short.find().sort({createdAt : -1})
+        const shorts = await Short.find().sort({createdAt : -1}).populate("channel")
         if (!shorts) {
             return res.status(400).json({message:"Videos are not found"})
         }

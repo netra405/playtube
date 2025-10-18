@@ -265,6 +265,8 @@ import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import Profile from "../component/Profile";
 import { serverUrl } from "../App"; // Make sure serverUrl is imported
+import AllVideosPage from "../component/AllVideosPage";
+import AllShortsPage from "../component/AllShortsPage";
 
 const Home = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -474,6 +476,10 @@ const Home = () => {
                 </button>
               ))}
               {popup && <Profile />}
+            </div>
+            <div className="mt-3">
+                <AllVideosPage/>
+                <AllShortsPage/>
             </div>
           </>
         )}

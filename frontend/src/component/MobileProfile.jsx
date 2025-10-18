@@ -224,7 +224,7 @@ const MobileProfile = () => {
   };
 
   return (
-    <div className="bg-[#0f0f0f] text-white h-screen w-full flex flex-col pt-3 p-3 sm:p-4 md:p-5 md:pt-5 md:rounded-xl md:max-w-md mx-auto overflow-y-auto">
+    <div className="bg-[#0f0f0f] text-white h-[80vh] w-full flex flex-col pt-3 p-3 sm:p-4 md:p-5 md:pt-5 md:rounded-xl md:max-w-md mx-auto overflow-y-auto">
       
       {/* Top profile section */}
       {userData ? (

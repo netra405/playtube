@@ -52,7 +52,7 @@ export const createVideo = async (req, res) => {
 
 export const getAllVideos = async (req,res) => {
     try {
-        const videos = await Video.find().sort({createdAt : -1})
+        const videos = await Video.find().sort({createdAt : -1}).populate("channel")
         if (!videos) {
             return res.status(400).json({message:"Videos are not found"})
         }
