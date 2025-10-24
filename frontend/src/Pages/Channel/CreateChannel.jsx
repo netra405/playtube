@@ -34,26 +34,64 @@ const CreateChannel = () => {
     setStep((prev) => prev - 1)
   }
 
-  const handleCreateChannel = async () => {
-    const formData = new FormData()
-    formData.append("name", channelName)
-    formData.append("description", description)
-    formData.append("category", category)
-    formData.append("avatar", avatar)
-    formData.append("banner", banner)
-    setLoading(true)
-    try {
-      const result = await axios.post(serverUrl + "/api/user/createchannel", formData, { withCredentials: true })
-      setLoading(false)
-      console.log(result.data)
-      showCustomAlert("Channel Created")
-      navigate("/")
-    } catch (error) {
-      setLoading(false)
-      console.log(error)
-      showCustomAlert(`Channel Create error: ${error}`)
-    }
+//   const handleCreateChannel = async () => {
+//     const formData = new FormData()
+//     formData.append("name", channelName)
+//     formData.append("description", description)
+//     formData.append("category", category)
+//     formData.append("avatar", avatar)
+//     formData.append("banner", banner)
+//     setLoading(true)
+//     try {
+//      await axios.post(serverUrl + "/api/user/createchannel", formData, {
+//   withCredentials: true,
+//   headers: {
+//     "Content-Type": "multipart/form-data"
+//   }
+// });
+
+//       setLoading(false)
+//       console.log(result.data)
+//       showCustomAlert("Channel Created")
+//       navigate("/")
+//     } catch (error) {
+//       setLoading(false)
+//       console.log(error)
+//       showCustomAlert(`Channel Create error: ${error}`)
+//     }
+//   }
+
+
+const handleCreateChannel = async () => {
+  const formData = new FormData();
+  formData.append("name", channelName);
+  formData.append("description", description);
+  formData.append("category", category);
+  if (avatar) formData.append("avatar", avatar);
+  if (banner) formData.append("banner", banner);
+
+  setLoading(true);
+  try {
+    const result = await axios.post(`${serverUrl}/api/user/createchannel`, formData, {
+      withCredentials: true,
+      headers: {
+        "Content-Type": "multipart/form-data"
+      }
+    });
+
+    setLoading(false);
+    console.log("Channel Created:", result.data);
+    showCustomAlert("✅ Channel Created Successfully");
+    navigate("/");
+  } catch (error) {
+    setLoading(false);
+    console.log("Create Channel Error:", error.response?.data || error);
+    showCustomAlert(
+      error.response?.data?.message || "❌ Failed to create channel"
+    );
   }
+};
+
 
   return (
     <div className="w-full min-h-screen bg-[#0f0f0f] text-white flex flex-col">

@@ -32,9 +32,9 @@ const commentSchema = new mongoose.Schema({
         type:String,
           required:true
     },
-    replies:{
+    replies:[
         replySchema
-    },
+    ],
     createAt:{
         type: Date,
         default: Date.now
@@ -67,9 +67,9 @@ const postSchema = new mongoose.Schema({
             ref:"User"
         }
     ],
-    comments: {
+    comments: [
         commentSchema
-    }
+    ]
 
 
 

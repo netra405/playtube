@@ -1,0 +1,500 @@
+import React, { useEffect, useRef, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate, useParams } from "react-router-dom";
+import { SiYoutubeshorts } from "react-icons/si";
+import {
+    FaPlay,
+    FaPause,
+    FaForward,
+    FaBackward,
+    FaVolumeUp,
+    FaVolumeMute,
+    FaExpand,
+    FaThumbsUp,
+    FaThumbsDown,
+    FaDownload,
+    FaBookmark
+} from "react-icons/fa";
+import ShortCard from "../../component/ShortCard";
+import Description from "../../component/Description";
+import axios from "axios";
+import { serverUrl } from "../../App";
+import ClipLoader from "react-spinners/ClipLoader";
+import { setAllVideosData } from "../../redux/contentSlice";
+
+
+// ---------- Reusable Icon Button ----------
+const IconButton = ({ icon: Icon, active, label, count, onClick }) => (
+    <button onClick={onClick} className="flex flex-col items-center focus:outline-none">
+        <div
+            className={`p-3 rounded-full transition ${active
+                ? "bg-white text-black hover:bg-white"
+                : "bg-black border border-gray-700 text-white hover:bg-gray-700"
+                }`}
+        >
+            <Icon size={20} />
+        </div>
+        <span className="text-xs mt-1 text-gray-300">
+            {count !== undefined && `${count}`} {label}
+        </span>
+    </button>
+);
+
+
+const PlayVideo = () => {
+    const videoRef = useRef(null);
+    const { videoId } = useParams();
+    const [video, setVideo] = useState(null);
+    const [channel, setChannel] = useState("");
+    const [isPlaying, setIsPlaying] = useState(false);
+    const [showControls, setShowControls] = useState(false);
+    const [progress, setProgress] = useState(0);
+    const [currentTime, setCurrentTime] = useState(0);
+    const [duration, setDuration] = useState(0);
+    const [isMuted, setIsMuted] = useState(false);
+    const [vol, setVol] = useState(1);
+    const [loading1, setLoading1] = useState(false);
+    const [loading2, setLoading2] = useState(false);
+    const [isSubscribed, setIsSubscribed] = useState(false);
+    const [comment, setComment] = useState([]);
+    const [newComment, setNewComment] = useState("");
+
+    const { allVideosData, allShortsData } = useSelector((state) => state.content);
+    const { userData } = useSelector((state) => state.user);
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
+    const didAddViewRef = useRef(false);
+
+    const suggestedVideos = allVideosData?.filter((v) => v._id !== videoId).slice(0, 10) || [];
+    const suggestedShorts = allShortsData?.slice(0, 10) || [];
+
+    // -------- Fetch Current Video --------
+    useEffect(() => {
+        if (!allVideosData) return;
+
+        // Reset view tracking when switching videos
+        didAddViewRef.current = false;
+
+        const currentVideo = allVideosData.find((v) => v._id === videoId);
+        if (currentVideo) {
+            setVideo(currentVideo);
+            setChannel(currentVideo.channel);
+            setComment(currentVideo.comments || []);
+        }
+    }, [videoId, allVideosData]);
+
+
+    // -------- Add View Only When Played --------
+    const addView = async () => {
+        if (didAddViewRef.current) return;
+        try {
+            const res = await axios.put(`${serverUrl}/api/content/video/${videoId}/add-view`, {}, { withCredentials: true });
+            const newViews = res.data.views;
+            setVideo((prev) => (prev ? { ...prev, views: newViews } : prev));
+            const updated = allVideosData.map((v) =>
+                v._id === videoId ? { ...v, views: newViews } : v
+            );
+            dispatch(setAllVideosData(updated));
+            didAddViewRef.current = true;
+        } catch (err) {
+            console.log("View Error:", err);
+        }
+    };
+
+
+    // -------- Video Controls --------
+    const handleUpdateTime = () => {
+        const v = videoRef.current;
+        if (!v) return;
+        const cur = v.currentTime;
+        const dur = v.duration;
+        setCurrentTime(cur);
+        setDuration(dur);
+        setProgress((cur / dur) * 100);
+    };
+
+    const formatTime = (time) => {
+        if (isNaN(time)) return "0:00";
+        const min = Math.floor(time / 60);
+        const sec = Math.floor(time % 60).toString().padStart(2, "0");
+        return `${min}:${sec}`;
+    };
+
+    const handleVolume = (e) => {
+        const vol = parseFloat(e.target.value);
+        setVol(vol);
+        setIsMuted(vol === 0);
+        if (videoRef.current) videoRef.current.volume = vol;
+    };
+
+    const handleMute = () => {
+        const v = videoRef.current;
+        if (!v) return;
+        v.muted = !isMuted;
+        setIsMuted(!isMuted);
+    };
+
+    const handleSeek = (e) => {
+        const v = videoRef.current;
+        if (!v) return;
+        const seek = (e.target.value / 100) * duration;
+        v.currentTime = seek;
+        setProgress(e.target.value);
+    };
+
+    const togglePlay = () => {
+        const v = videoRef.current;
+        if (!v) return;
+        if (isPlaying) v.pause();
+        else v.play();
+    };
+
+    const skipForward = () => {
+        if (videoRef.current) videoRef.current.currentTime += 10;
+    };
+    const skipBackward = () => {
+        if (videoRef.current) videoRef.current.currentTime -= 10;
+    };
+    const handleFullScreen = () => {
+        if (videoRef.current?.requestFullscreen) videoRef.current.requestFullscreen();
+    };
+
+
+    // -------- Likes / Dislikes / Save --------
+    const toggleLike = async () => {
+        try {
+            const res = await axios.put(`${serverUrl}/api/content/video/${videoId}/toggle-like`, {}, { withCredentials: true });
+            setVideo((prev) => ({
+                ...prev,
+                likes: res.data.likes ?? prev.likes,
+                disLikes: res.data.disLikes ?? prev.disLikes,
+            }));
+        } catch (err) {
+            console.log(err);
+        }
+    };
+
+    const toggleDislike = async () => {
+        try {
+            const res = await axios.put(`${serverUrl}/api/content/video/${videoId}/toggle-dislike`, {}, { withCredentials: true });
+            setVideo((prev) => ({
+                ...prev,
+                likes: res.data.likes ?? prev.likes,
+                disLikes: res.data.disLikes ?? prev.disLikes,
+            }));
+        } catch (err) {
+            console.log(err);
+        }
+    };
+
+    const toggleSave = async () => {
+        try {
+            const res = await axios.put(`${serverUrl}/api/content/video/${videoId}/toggle-save`, {}, { withCredentials: true });
+            setVideo(res.data);
+        } catch (err) {
+            console.log(err);
+        }
+    };
+
+
+    // -------- Comments --------
+    const handleAddComment = async () => {
+        if (!newComment) return;
+        setLoading1(true);
+        try {
+            const res = await axios.post(
+                `${serverUrl}/api/content/video/${videoId}/add-comment`,
+                { message: newComment },
+                { withCredentials: true }
+            );
+            setComment((prev) => [res.data.comments.slice(-1)[0], ...prev]);
+            setNewComment("");
+        } catch (err) {
+            console.log(err);
+        } finally {
+            setLoading1(false);
+        }
+    };
+
+    const handleReply = async ({ commentId, replyText }) => {
+        if (!replyText) return;
+        setLoading2(true);
+        try {
+            const res = await axios.post(
+                `${serverUrl}/api/content/video/${videoId}/${commentId}/add-reply`,
+                { message: replyText },
+                { withCredentials: true }
+            );
+            setComment(res.data.comments);
+        } catch (err) {
+            console.log(err);
+        } finally {
+            setLoading2(false);
+        }
+    };
+
+
+    // -------- Subscribe State --------
+    useEffect(() => {
+        setIsSubscribed(
+            channel?.subscribers?.some(
+                (sub) =>
+                    sub._id?.toString() === userData._id?.toString() ||
+                    sub?.toString() === userData._id?.toString()
+            )
+        );
+    }, [channel?.subscribers, userData?._id]);
+
+
+    // -------- Render --------
+    return (
+        <div className="flex bg-[#0f0f0f] text-white flex-col lg:flex-row gap-6 p-4 lg:p-6">
+            {/* ---------- LEFT: Video Section ---------- */}
+            <div className="flex-1">
+                <div
+                    onMouseEnter={() => setShowControls(true)}
+                    onMouseLeave={() => setShowControls(false)}
+                    className="w-full aspect-video bg-black rounded-lg overflow-hidden relative"
+                >
+                    <video
+                        key={videoId}
+                        ref={videoRef}
+                        className="w-full h-full object-contain"
+                        controls={false}
+                        autoPlay
+                        src={video?.videoUrl}
+                        onPlay={() => {
+                            setIsPlaying(true);
+                            addView(); // ✅ add view only when played
+                        }}
+                        onPause={() => setIsPlaying(false)}
+                        onTimeUpdate={handleUpdateTime}
+                    />
+
+                    {/* Controls */}
+                    {showControls && (
+                        <div className="absolute inset-0 hidden lg:flex items-center justify-center gap-8 z-20">
+                            <button onClick={skipBackward} className="bg-black/70 p-3 rounded-full hover:bg-orange-600">
+                                <FaBackward size={24} />
+                            </button>
+                            <button onClick={togglePlay} className="bg-black/70 p-3 rounded-full hover:bg-orange-600">
+                                {isPlaying ? <FaPause size={28} /> : <FaPlay size={28} />}
+                            </button>
+                            <button onClick={skipForward} className="bg-black/70 p-3 rounded-full hover:bg-orange-600">
+                                <FaForward size={24} />
+                            </button>
+                        </div>
+                    )}
+
+                    {/* Progress Bar */}
+                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/60 to-transparent px-3 z-30">
+                        <input
+                            onChange={handleSeek}
+                            value={progress}
+                            type="range"
+                            min={0}
+                            max={100}
+                            className="w-full accent-orange-600"
+                        />
+                        <div className="flex justify-between mt-2 text-xs text-gray-200">
+                            <div className="flex items-center gap-3">
+                                <span>
+                                    {formatTime(currentTime)}/{formatTime(duration)}
+                                </span>
+                                <button onClick={skipBackward}>
+                                    <FaBackward />
+                                </button>
+                                <button onClick={togglePlay}>
+                                    {isPlaying ? <FaPause /> : <FaPlay />}
+                                </button>
+                                <button onClick={skipForward}>
+                                    <FaForward />
+                                </button>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <button onClick={handleMute}>
+                                    {isMuted ? <FaVolumeMute /> : <FaVolumeUp />}
+                                </button>
+                                <input
+                                    type="range"
+                                    value={isMuted ? 0 : vol}
+                                    onChange={handleVolume}
+                                    className="accent-orange-600 w-20"
+                                    min={0}
+                                    max={1}
+                                    step={0.1}
+                                />
+                                <button onClick={handleFullScreen}>
+                                    <FaExpand />
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* ---------- Details / Comments ---------- */}
+                <h1 className="mt-4 text-lg font-bold">{video?.title}</h1>
+                <p className="text-sm text-gray-400">{video?.views} views</p>
+
+                <div className="flex items-center justify-between flex-wrap mt-2">
+                    <div className="flex items-center gap-4">
+                        <img
+                            src={channel?.avatar}
+                            alt=""
+                            className="w-12 h-12 rounded-full border border-gray-600"
+                        />
+                        <div>
+                            <h1 className="font-bold">{channel?.name}</h1>
+                            <p className="text-xs">{channel?.subscribers?.length} subscribers</p>
+                        </div>
+                    </div>
+
+                    <div className="flex gap-4 mt-2">
+                        <IconButton
+                            icon={FaThumbsUp}
+                            label="Likes"
+                            count={video?.likes?.length}
+                            onClick={toggleLike}
+                            active={video?.likes?.some(
+                                (id) => (id?._id ?? id)?.toString() === userData?._id?.toString()
+                            )}
+                        />
+                        <IconButton
+                            icon={FaThumbsDown}
+                            label="Dislikes"
+                            count={video?.disLikes?.length}
+                            onClick={toggleDislike}
+                            active={video?.disLikes?.some(
+                                (id) => (id?._id ?? id)?.toString() === userData?._id?.toString()
+                            )}
+                        />
+                        <IconButton
+                            icon={FaDownload}
+                            label="Download"
+                            onClick={() => {
+                                const link = document.createElement("a");
+                                link.href = video?.videoUrl;
+                                link.download = `${video?.title}.mp4`;
+                                link.click();
+                            }}
+                        />
+                        <IconButton
+                            icon={FaBookmark}
+                            label="Save"
+                            active={video?.saveBy?.includes(userData?._id)}
+                            onClick={toggleSave}
+                        />
+                    </div>
+                </div>
+
+                {/* Description */}
+                <div className="mt-4 bg-[#1a1a1a] p-3 rounded-lg">
+                    <h2 className="font-semibold mb-2">Description</h2>
+                    <Description text={video?.description} />
+                </div>
+
+                {/* Comments */}
+                <div className="mt-6">
+                    <h2 className="font-semibold mb-3">Comments</h2>
+                    <div className="flex gap-2 mb-4">
+                        <input
+                            onChange={(e) => setNewComment(e.target.value)}
+                            value={newComment}
+                            placeholder="Add a comment..."
+                            className="flex-1 border border-gray-700 bg-[#1a1a1a] rounded-lg px-3 py-2"
+                            type="text"
+                        />
+                        <button
+                            onClick={handleAddComment}
+                            disabled={loading1}
+                            className="bg-orange-600 px-4 py-2 rounded-lg"
+                        >
+                            {loading1 ? <ClipLoader size={20} color="black" /> : "Post"}
+                        </button>
+                    </div>
+                    <div className="space-y-3 max-h-[300px] overflow-y-auto hide-scrollbar">
+                        {comment?.length > 0 ? (
+                            comment.map((c) => (
+                                <div key={c._id} className="p-3 bg-[#1a1a1a] rounded-lg">
+                                    <div className="flex gap-2 items-center">
+                                        <img
+                                            src={c.author?.photoUrl}
+                                            alt=""
+                                            className="w-8 h-8 rounded-full"
+                                        />
+                                        <span>@{c.author?.userName}</span>
+                                    </div>
+                                    <p className="px-4 py-2">{c.message}</p>
+                                </div>
+                            ))
+                        ) : (
+                            <p className="text-gray-500 text-sm">No comments yet</p>
+                        )}
+                    </div>
+                </div>
+            </div>
+
+            {/* ---------- RIGHT: Shorts + Up Next ---------- */}
+            <div className="w-full lg:w-[380px] px-4 py-4 border-t lg:border-t-0 lg:border-l border-gray-800 overflow-y-auto max-h-[calc(100vh-120px)] hide-scrollbar">
+                <h2 className="flex items-center gap-2 font-bold text-lg mb-3">
+                    <SiYoutubeshorts className="text-orange-600" /> Shorts
+                </h2>
+
+                <div className="flex gap-3 overflow-x-auto hide-scrollbar pb-3">
+                    {suggestedShorts?.length > 0 ? (
+                        suggestedShorts.map((short) => (
+                            <div
+                                key={short._id}
+                                onClick={() => navigate(`/playvideo/${short._id}`)}
+                                className="cursor-pointer"
+                            >
+                                <ShortCard
+                                    shortUrl={short?.shortUrl}
+                                    title={short?.title}
+                                    channelName={short?.channel?.name}
+                                    avatar={short?.channel?.avatar}
+                                    views={short?.views}
+                                    id={short?._id}   // ✅ make sure this is passed
+                                />
+
+
+                            </div>
+                        ))
+                    ) : (
+                        <p className="text-gray-500 text-sm">No shorts available</p>
+                    )}
+                </div>
+
+                <div className="font-bold text-lg mt-4 mb-3">Up Next</div>
+                <div className="space-y-3">
+                    {suggestedVideos?.length > 0 ? (
+                        suggestedVideos.map((v) => (
+                            <div
+                                key={v._id}
+                                onClick={() => navigate(`/playvideo/${v._id}`)}
+                                className="flex gap-2 cursor-pointer hover:bg-[#1a1a1a]/80 p-2 rounded-lg transition-all duration-200"
+                            >
+                                <img
+                                    src={v?.thumbnail}
+                                    alt={v?.title}
+                                    className="w-32 h-20 rounded-lg object-cover"
+                                />
+                                <div className="flex flex-col justify-center text-sm">
+                                    <h3 className="text-white font-medium line-clamp-2">
+                                        {v?.title}
+                                    </h3>
+                                    <p className="text-gray-400 text-xs">{v?.channel?.name}</p>
+                                    <p>{v?.views} views</p>
+                                </div>
+                            </div>
+                        ))
+                    ) : (
+                        <p className="text-gray-500 text-sm">No videos available</p>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default PlayVideo;

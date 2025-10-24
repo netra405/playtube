@@ -73,7 +73,7 @@ const CreateShort = () => {
             <input onChange={(e) => setTitle(e.target.value)} value={title} type="text" placeholder='Title*' className='w-full p-3 rounded-lg bg-[#121212] border border-gray-700 text-white focus:ring-2
               focus:ring-orange-500 focus:outline-none ' />
 
-            <textarea onChange={(e) => setDescription(e.target.value)} value={description} type="text" placeholder='Description*' className='w-full p-3 rounded-lg bg-[#121212] border border-gray-700 text-white focus:ring-2
+            <textarea onChange={(e) => setDescription(e.target.value)} value={description} type="text" placeholder='Description*' className='w-full hide-scrollbar text-wrap p-3 rounded-lg bg-[#121212] border border-gray-700 text-white focus:ring-2
               focus:ring-orange-500 focus:outline-none ' />
 
             <input onChange={(e) => setTags(e.target.value)} value={tags} type="text" placeholder='Tags* (comma separated)' className='w-full p-3 rounded-lg bg-[#121212] border border-gray-700 text-white focus:ring-2

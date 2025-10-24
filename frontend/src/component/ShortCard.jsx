@@ -1,8 +1,12 @@
-import React from 'react'
+import React from "react";
+import { useNavigate } from "react-router-dom";
 
 const ShortCard = ({ shortUrl, title, channelName, avatar, views, id }) => {
+  const navigate = useNavigate();
+
   return (
     <div
+      onClick={() => navigate(`/playshort/${id}`)} // ✅ absolute path and id
       className="w-[180px] sm:w-[200px] md:w-[220px] mb-8 cursor-pointer group relative transition-transform duration-300 hover:scale-[1.05]"
     >
       {/* Video Container */}
@@ -16,7 +20,7 @@ const ShortCard = ({ shortUrl, title, channelName, avatar, views, id }) => {
           preload="metadata"
           onContextMenu={(e) => e.preventDefault()}
         />
-        {/* Gradient overlay for text readability */}
+        {/* Gradient overlay */}
         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-3 rounded-b-xl">
           <h3 className="text-sm font-semibold text-white line-clamp-2">{title}</h3>
           <div className="flex items-center gap-2 mt-2">
@@ -31,7 +35,7 @@ const ShortCard = ({ shortUrl, title, channelName, avatar, views, id }) => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default ShortCard
+export default ShortCard;

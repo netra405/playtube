@@ -37,7 +37,7 @@ const AllVideosPage = () => {
   }, [allVideosData])
 
   return (
-    <div className='flex flex-wrap gap-6 md:justify-start mb-12 sm:items-center sm:justify-center'>
+    <div className='flex flex-wrap gap-6 md:justify-start mb-12 items-center justify-center'>
       {allVideosData?.map((video) => (
         <VideoCard
           key={video?._id}
@@ -46,6 +46,8 @@ const AllVideosPage = () => {
           title={video?.title}
           channelLogo={video?.channel?.avatar}
           channelName={video?.channel?.name}
+          id={video?._id}
+          views={video?.views}
         />
       ))}
     </div>

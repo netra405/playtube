@@ -24,10 +24,15 @@
 
 
 import React from 'react'
+import { useNavigate } from 'react-router-dom'
 
 const VideoCard = ({ thumbnail, duration, channelLogo, title, channelName, views, id }) => {
+
+  const navigate = useNavigate()
+
+
   return (
-    <div
+    <div onClick={()=>navigate(`playvideo/${id}`)}
       className="w-[340px] sm:w-[360px] cursor-pointer rounded-xl transition-transform transform hover:scale-[1.03] hover:bg-[#1f1f1f]/30 p-2"
     >
       {/* Thumbnail */}
