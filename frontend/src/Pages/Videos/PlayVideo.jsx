@@ -13,7 +13,7 @@ import {
     FaThumbsUp,
     FaThumbsDown,
     FaDownload,
-    FaBookmark
+    FaBookmark,
 } from "react-icons/fa";
 import ShortCard from "../../component/ShortCard";
 import Description from "../../component/Description";
@@ -22,13 +22,15 @@ import { serverUrl } from "../../App";
 import ClipLoader from "react-spinners/ClipLoader";
 import { setAllVideosData } from "../../redux/contentSlice";
 
-
 // ---------- Reusable Icon Button ----------
 const IconButton = ({ icon: Icon, active, label, count, onClick }) => (
-    <button onClick={onClick} className="flex flex-col items-center focus:outline-none">
+    <button
+        onClick={onClick}
+        className="flex flex-col items-center focus:outline-none transition"
+    >
         <div
-            className={`p-3 rounded-full transition ${active
-                ? "bg-white text-black hover:bg-white"
+            className={`p-3 rounded-full ${active
+                ? "bg-white text-black"
                 : "bg-black border border-gray-700 text-white hover:bg-gray-700"
                 }`}
         >
@@ -39,7 +41,6 @@ const IconButton = ({ icon: Icon, active, label, count, onClick }) => (
         </span>
     </button>
 );
-
 
 const PlayVideo = () => {
     const videoRef = useRef(null);
@@ -65,16 +66,15 @@ const PlayVideo = () => {
     const navigate = useNavigate();
     const didAddViewRef = useRef(false);
 
-    const suggestedVideos = allVideosData?.filter((v) => v._id !== videoId).slice(0, 10) || [];
+    const suggestedVideos =
+        allVideosData?.filter((v) => v._id !== videoId).slice(0, 10) || [];
     const suggestedShorts = allShortsData?.slice(0, 10) || [];
 
-    // -------- Fetch Current Video --------
+    // Fetch Current Video
     useEffect(() => {
         if (!allVideosData) return;
 
-        // Reset view tracking when switching videos
         didAddViewRef.current = false;
-
         const currentVideo = allVideosData.find((v) => v._id === videoId);
         if (currentVideo) {
             setVideo(currentVideo);
@@ -83,12 +83,15 @@ const PlayVideo = () => {
         }
     }, [videoId, allVideosData]);
 
-
-    // -------- Add View Only When Played --------
+    // Add View
     const addView = async () => {
         if (didAddViewRef.current) return;
         try {
-            const res = await axios.put(`${serverUrl}/api/content/video/${videoId}/add-view`, {}, { withCredentials: true });
+            const res = await axios.put(
+                `${serverUrl}/api/content/video/${videoId}/add-view`,
+                {},
+                { withCredentials: true }
+            );
             const newViews = res.data.views;
             setVideo((prev) => (prev ? { ...prev, views: newViews } : prev));
             const updated = allVideosData.map((v) =>
@@ -101,8 +104,7 @@ const PlayVideo = () => {
         }
     };
 
-
-    // -------- Video Controls --------
+    // Video Controls
     const handleUpdateTime = () => {
         const v = videoRef.current;
         if (!v) return;
@@ -159,11 +161,14 @@ const PlayVideo = () => {
         if (videoRef.current?.requestFullscreen) videoRef.current.requestFullscreen();
     };
 
-
-    // -------- Likes / Dislikes / Save --------
+    // Likes / Dislikes / Save
     const toggleLike = async () => {
         try {
-            const res = await axios.put(`${serverUrl}/api/content/video/${videoId}/toggle-like`, {}, { withCredentials: true });
+            const res = await axios.put(
+                `${serverUrl}/api/content/video/${videoId}/toggle-like`,
+                {},
+                { withCredentials: true }
+            );
             setVideo((prev) => ({
                 ...prev,
                 likes: res.data.likes ?? prev.likes,
@@ -176,7 +181,11 @@ const PlayVideo = () => {
 
     const toggleDislike = async () => {
         try {
-            const res = await axios.put(`${serverUrl}/api/content/video/${videoId}/toggle-dislike`, {}, { withCredentials: true });
+            const res = await axios.put(
+                `${serverUrl}/api/content/video/${videoId}/toggle-dislike`,
+                {},
+                { withCredentials: true }
+            );
             setVideo((prev) => ({
                 ...prev,
                 likes: res.data.likes ?? prev.likes,
@@ -189,15 +198,18 @@ const PlayVideo = () => {
 
     const toggleSave = async () => {
         try {
-            const res = await axios.put(`${serverUrl}/api/content/video/${videoId}/toggle-save`, {}, { withCredentials: true });
+            const res = await axios.put(
+                `${serverUrl}/api/content/video/${videoId}/toggle-save`,
+                {},
+                { withCredentials: true }
+            );
             setVideo(res.data);
         } catch (err) {
             console.log(err);
         }
     };
 
-
-    // -------- Comments --------
+    // Comments
     const handleAddComment = async () => {
         if (!newComment) return;
         setLoading1(true);
@@ -233,23 +245,49 @@ const PlayVideo = () => {
         }
     };
 
+    // Subscribe toggle
+// Subscribe toggle
+const handleSubscribe = async (channelId) => {
+  if (!channelId) return;
+  setLoading2(true);
+  try {
+    const res = await axios.post(
+      `${serverUrl}/api/user/togglesubscribe`,
+      { channelId },
+      { withCredentials: true }
+    );
 
-    // -------- Subscribe State --------
-    useEffect(() => {
-        setIsSubscribed(
-            channel?.subscribers?.some(
-                (sub) =>
-                    sub._id?.toString() === userData._id?.toString() ||
-                    sub?.toString() === userData._id?.toString()
-            )
-        );
-    }, [channel?.subscribers, userData?._id]);
+    // Update channel state
+    setChannel(res.data);
+
+    // Update subscription status
+    setIsSubscribed(res.data.subscribers.some(
+      sub => (sub?._id ?? sub)?.toString() === userData?._id?.toString()
+    ));
+
+    // Optional: update video state
+    setVideo(prev => prev ? { ...prev, channel: res.data } : prev);
+
+  } catch (err) {
+    console.error(err);
+  } finally {
+    setLoading2(false);
+  }
+};
+
+// On initial load, set isSubscribed
+useEffect(() => {
+  if (!channel || !userData) return;
+  setIsSubscribed(channel.subscribers?.some(
+    sub => (sub?._id ?? sub)?.toString() === userData._id?.toString()
+  ));
+}, [channel, userData]);
 
 
-    // -------- Render --------
+
     return (
         <div className="flex bg-[#0f0f0f] text-white flex-col lg:flex-row gap-6 p-4 lg:p-6">
-            {/* ---------- LEFT: Video Section ---------- */}
+            {/* LEFT: Video Section */}
             <div className="flex-1">
                 <div
                     onMouseEnter={() => setShowControls(true)}
@@ -265,22 +303,30 @@ const PlayVideo = () => {
                         src={video?.videoUrl}
                         onPlay={() => {
                             setIsPlaying(true);
-                            addView(); // ✅ add view only when played
+                            addView();
                         }}
                         onPause={() => setIsPlaying(false)}
                         onTimeUpdate={handleUpdateTime}
                     />
 
-                    {/* Controls */}
                     {showControls && (
                         <div className="absolute inset-0 hidden lg:flex items-center justify-center gap-8 z-20">
-                            <button onClick={skipBackward} className="bg-black/70 p-3 rounded-full hover:bg-orange-600">
+                            <button
+                                onClick={skipBackward}
+                                className="bg-black/70 p-3 rounded-full hover:bg-orange-600"
+                            >
                                 <FaBackward size={24} />
                             </button>
-                            <button onClick={togglePlay} className="bg-black/70 p-3 rounded-full hover:bg-orange-600">
+                            <button
+                                onClick={togglePlay}
+                                className="bg-black/70 p-3 rounded-full hover:bg-orange-600"
+                            >
                                 {isPlaying ? <FaPause size={28} /> : <FaPlay size={28} />}
                             </button>
-                            <button onClick={skipForward} className="bg-black/70 p-3 rounded-full hover:bg-orange-600">
+                            <button
+                                onClick={skipForward}
+                                className="bg-black/70 p-3 rounded-full hover:bg-orange-600"
+                            >
                                 <FaForward size={24} />
                             </button>
                         </div>
@@ -332,59 +378,83 @@ const PlayVideo = () => {
                     </div>
                 </div>
 
-                {/* ---------- Details / Comments ---------- */}
+                {/* Video Details */}
                 <h1 className="mt-4 text-lg font-bold">{video?.title}</h1>
                 <p className="text-sm text-gray-400">{video?.views} views</p>
 
-                <div className="flex items-center justify-between flex-wrap mt-2">
-                    <div className="flex items-center gap-4">
-                        <img onClick={() => navigate(`/channelpage/${channel?._id}`)}
-                            src={channel?.avatar}
-                            alt=""
-                            className="w-12 h-12 rounded-full border border-gray-600"
-                        />
-                        <div>
-                            <h1 onClick={() => navigate(`/channelpage/${channel?._id}`)} className="font-bold">{channel?.name}</h1>
-                            <p className="text-xs">{channel?.subscribers?.length} subscribers</p>
-                        </div>
+                {/* Channel + Subscribe */}
+                <div className="flex items-center gap-4 mt-2">
+                    <img
+                        onClick={() => navigate(`/channelpage/${channel?._id}`)}
+                        src={channel?.avatar}
+                        alt=""
+                        className="w-12 h-12 rounded-full border border-gray-600 cursor-pointer"
+                    />
+                    <div>
+                        <h1
+                            onClick={() => navigate(`/channelpage/${channel?._id}`)}
+                            className="font-bold cursor-pointer"
+                        >
+                            {channel?.name}
+                        </h1>
+                        <p className="text-xs">{channel?.subscribers?.length} subscribers</p>
                     </div>
 
-                    <div className="flex gap-4 mt-2">
-                        <IconButton
-                            icon={FaThumbsUp}
-                            label="Likes"
-                            count={video?.likes?.length}
-                            onClick={toggleLike}
-                            active={video?.likes?.some(
-                                (id) => (id?._id ?? id)?.toString() === userData?._id?.toString()
-                            )}
-                        />
-                        <IconButton
-                            icon={FaThumbsDown}
-                            label="Dislikes"
-                            count={video?.disLikes?.length}
-                            onClick={toggleDislike}
-                            active={video?.disLikes?.some(
-                                (id) => (id?._id ?? id)?.toString() === userData?._id?.toString()
-                            )}
-                        />
-                        <IconButton
-                            icon={FaDownload}
-                            label="Download"
-                            onClick={() => {
-                                const link = document.createElement("a");
-                                link.href = video?.videoUrl;
-                                link.download = `${video?.title}.mp4`;
-                                link.click();
-                            }}
-                        />
-                        <IconButton
-                            icon={FaBookmark}
-                            label="Save"
-                            active={video?.saveBy?.includes(userData?._id)}
-                            onClick={toggleSave}
-                        />
-                    </div>
+                    <button
+                        className={`text-[10px] sm:text-xs px-2 sm:px-3 py-1 rounded-full ${isSubscribed
+                                ? "bg-black text-white border border-gray-700"
+                                : "bg-white text-black"
+                            }`}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            handleSubscribe(channel?._id);
+                        }}
+                        disabled={loading2}
+                    >
+                        {loading2 ? <ClipLoader size={16} color="gray" /> : isSubscribed ? "unSubscribe" : "Subscribe"}
+                    </button>
+
+
+                </div>
+
+                {/* Like/Dislike/Save Buttons */}
+                <div className="flex gap-4 mt-4">
+                    <IconButton
+                        icon={FaThumbsUp}
+                        label="Likes"
+                        count={video?.likes?.length}
+                        onClick={toggleLike}
+                        active={video?.likes?.some(
+                            (id) => (id?._id ?? id)?.toString() === userData?._id?.toString()
+                        )}
+                    />
+                    <IconButton
+                        icon={FaThumbsDown}
+                        label="Dislikes"
+                        count={video?.disLikes?.length}
+                        onClick={toggleDislike}
+                        active={video?.disLikes?.some(
+                            (id) => (id?._id ?? id)?.toString() === userData?._id?.toString()
+                        )}
+                    />
+                    <IconButton
+                        icon={FaDownload}
+                        label="Download"
+                        onClick={() => {
+                            const link = document.createElement("a");
+                            link.href = video?.videoUrl;
+                            link.download = `${video?.title}.mp4`;
+                            link.click();
+                        }}
+                    />
+                    <IconButton
+                        icon={FaBookmark}
+                        label="Save"
+                        onClick={toggleSave}
+                        active={video?.savedBy?.some(
+                            (id) => id.toString() === userData?._id?.toString()
+                        )}
+                    />
                 </div>
 
                 {/* Description */}
@@ -434,19 +504,16 @@ const PlayVideo = () => {
                 </div>
             </div>
 
-            {/* ---------- RIGHT: Shorts + Up Next ---------- */}
+            {/* RIGHT: Shorts + Up Next */}
             <div className="w-full lg:w-[380px] px-4 py-4 border-t lg:border-t-0 lg:border-l border-gray-800 overflow-y-auto max-h-[calc(100vh-120px)] hide-scrollbar">
                 <h2 className="flex items-center gap-2 font-bold text-lg mb-3">
                     <SiYoutubeshorts className="text-orange-600" /> Shorts
                 </h2>
-
                 <div className="flex gap-3 overflow-x-auto hide-scrollbar pb-3">
                     {suggestedShorts?.length > 0 ? (
                         suggestedShorts.map((short) => (
-                            <div className="cursor-pointer"
-                            >
+                            <div key={short._id} className="cursor-pointer">
                                 <ShortCard
-                                    key={short._id}
                                     shortUrl={short?.shortUrl}
                                     title={short?.title}
                                     channelName={short?.channel?.name}
@@ -454,8 +521,6 @@ const PlayVideo = () => {
                                     views={short?.views}
                                     id={short?._id}
                                 />
-
-
                             </div>
                         ))
                     ) : (
@@ -478,9 +543,7 @@ const PlayVideo = () => {
                                     className="w-32 h-20 rounded-lg object-cover"
                                 />
                                 <div className="flex flex-col justify-center text-sm">
-                                    <h3 className="text-white font-medium line-clamp-2">
-                                        {v?.title}
-                                    </h3>
+                                    <h3 className="text-white font-medium line-clamp-2">{v?.title}</h3>
                                     <p className="text-gray-400 text-xs">{v?.channel?.name}</p>
                                     <p>{v?.views} views</p>
                                 </div>

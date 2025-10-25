@@ -62,32 +62,26 @@ export const toggleSavePlaylist = async (req, res) => {
     const userId = req.userId;
 
     if (!playlistId || !userId) {
-      return res
-        .status(400)
-        .json({ message: "playlistId and userId are required." });
+      return res.status(400).json({ message: "playlistId and userId are required." });
     }
 
     const playlist = await Playlist.findById(playlistId);
-    if (!playlist) {
-      return res.status(404).json({ message: "Playlist not found." });
-    }
+    if (!playlist) return res.status(404).json({ message: "Playlist not found." });
 
-    // Toggle save/unsave logic
     if (playlist.saveBy.includes(userId)) {
-      playlist.saveBy.pull(userId);
+      playlist.saveBy.pull(userId); // unsave
     } else {
-      playlist.saveBy.push(userId);
+      playlist.saveBy.push(userId); // save
     }
 
     await playlist.save();
+
     return res.status(200).json({
       message: "Playlist save state updated.",
-      playlist,
+      saveBy: playlist.saveBy, // important for frontend state
     });
   } catch (error) {
     console.error(error);
-    return res
-      .status(500)
-      .json({ message: `Failed to toggle save playlist: ${error.message}` });
+    return res.status(500).json({ message: error.message });
   }
 };
