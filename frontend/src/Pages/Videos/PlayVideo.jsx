@@ -338,13 +338,13 @@ const PlayVideo = () => {
 
                 <div className="flex items-center justify-between flex-wrap mt-2">
                     <div className="flex items-center gap-4">
-                        <img
+                        <img onClick={() => navigate(`/channelpage/${channel?._id}`)}
                             src={channel?.avatar}
                             alt=""
                             className="w-12 h-12 rounded-full border border-gray-600"
                         />
                         <div>
-                            <h1 className="font-bold">{channel?.name}</h1>
+                            <h1 onClick={() => navigate(`/channelpage/${channel?._id}`)} className="font-bold">{channel?.name}</h1>
                             <p className="text-xs">{channel?.subscribers?.length} subscribers</p>
                         </div>
                     </div>
@@ -443,18 +443,16 @@ const PlayVideo = () => {
                 <div className="flex gap-3 overflow-x-auto hide-scrollbar pb-3">
                     {suggestedShorts?.length > 0 ? (
                         suggestedShorts.map((short) => (
-                            <div
-                                key={short._id}
-                                onClick={() => navigate(`/playvideo/${short._id}`)}
-                                className="cursor-pointer"
+                            <div className="cursor-pointer"
                             >
                                 <ShortCard
+                                    key={short._id}
                                     shortUrl={short?.shortUrl}
                                     title={short?.title}
                                     channelName={short?.channel?.name}
                                     avatar={short?.channel?.avatar}
                                     views={short?.views}
-                                    id={short?._id}   // ✅ make sure this is passed
+                                    id={short?._id}
                                 />
 
 

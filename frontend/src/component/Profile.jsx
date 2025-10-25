@@ -322,7 +322,7 @@ const Profile = () => {
   };
 
   return (
-    <div className="absolute right-5 top-10 mt-2 w-72 bg-[#212121] text-white rounded-xl shadow-lg z-50 hidden md:block">
+    <div className="absolute right-5 top-10 mt-2 w-72 bg-[#212121] text-white rounded-xl shadow-lg z-1000 hidden md:block">
 
       {/* Show user info if logged in */}
       {userData && (

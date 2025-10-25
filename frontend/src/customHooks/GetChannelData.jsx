@@ -1,26 +1,48 @@
-import axios from 'axios'
-import React from 'react'
-import { useDispatch } from 'react-redux'
-import { serverUrl } from '../App'
-import { setChannelData } from '../redux/userSlice'
-import { useEffect } from 'react'
+import React, { useEffect } from "react";
+import axios from "axios";
+import { useDispatch } from "react-redux";
+import { serverUrl } from "../App";
+import { setAllChannelData, setChannelData } from "../redux/userSlice";
 
 const GetChannelData = () => {
-    const dispatch = useDispatch()
+  const dispatch = useDispatch();
 
- useEffect(()=>{
-    const fetcChannel = async ()=>{
-        try {
-            const result = await axios.get(serverUrl + "/api/user/getChannel", {withCredentials:true})
-            dispatch(setChannelData(result.data))
-            console.log(result.data)
-        } catch (error) {
-            console.log(error)
-             dispatch(setChannelData(null))
-        }
-    }
-    fetcChannel()
- },[])
-}
+  // ✅ Fetch current user's channel
+  useEffect(() => {
+    const fetchChannel = async () => {
+      try {
+        const result = await axios.get(`${serverUrl}/api/user/getchannel`, {
+          withCredentials: true,
+        });
+        dispatch(setChannelData(result.data));
+        console.log("Current channel:", result.data);
+      } catch (error) {
+        console.error("Error fetching current channel:", error);
+        dispatch(setChannelData(null));
+      }
+    };
+    fetchChannel();
+  }, [dispatch]);
 
-export default GetChannelData
+  // ✅ Fetch all channels
+  useEffect(() => {
+    const fetchAllChannels = async () => {
+      try {
+        const result = await axios.get(`${serverUrl}/api/user/allchannel`, {
+          withCredentials: true,
+        });
+        dispatch(setAllChannelData(result.data));
+        console.log("Fetched channels:", result.data);
+      } catch (error) {
+        console.error("Error fetching all channels:", error);
+        dispatch(setAllChannelData(null));
+      }
+    };
+    fetchAllChannels();
+  }, [dispatch]);
+
+  // ✅ Return nothing (used as data loader)
+  return null;
+};
+
+export default GetChannelData;

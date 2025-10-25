@@ -14,7 +14,7 @@ import Description from "../../component/Description";
 import axios from "axios";
 import { serverUrl } from "../../App";
 import ClipLoader from "react-spinners/ClipLoader";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 const IconButton = ({ icon: Icon, active, label, count, onClick }) => (
   <button
@@ -54,6 +54,7 @@ const PlayShort = () => {
   const [newComment, setNewComment] = useState("");
   const [replyOpen, setReplyOpen] = useState({});
   const [replyText, setReplyText] = useState({});
+  const navigate = useNavigate()
 
   // 🔁 Load shorts (place selected one first)
   useEffect(() => {
@@ -279,12 +280,12 @@ const PlayShort = () => {
             {/* ℹ️ Info */}
             <div className="absolute bottom-0 left-0 w-full p-4 bg-gradient-to-t from-black/80 via-black/40 to-transparent text-white space-y-1">
               <div className="flex items-center gap-2">
-                <img
+                <img onClick={()=>navigate(`/channelpage/${short.channel?._id}`)}
                   src={short.channel?.avatar || "/default-avatar.png"}
                   className="w-8 h-8 rounded-full border border-gray-700"
                   alt=""
                 />
-                <span className="text-sm text-gray-300">
+                <span  onClick={()=>navigate(`/channelpage/${short.channel?._id}`)} className="text-sm text-gray-300">
                   @{short.channel?.name?.toLowerCase() || "unknown"}
                 </span>
                 <button

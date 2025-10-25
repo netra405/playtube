@@ -24,6 +24,7 @@ import GetChannelData from "./customHooks/GetChannelData";
 import GetAllContentData from "./customHooks/GetAllContentData";
 import PlayVideo from "./Pages/Videos/PlayVideo";
 import PlayShort from "./Pages/Shorts/PlayShort";
+import ChannelPage from "./Pages/Channel/ChannelPage";
 
 
 export const serverUrl = "http://localhost:8000";
@@ -52,19 +53,30 @@ const App = () => {
         <Route path="/signup" element={<SignUp />} />
         <Route path="/signin" element={<SignIn />} />
         <Route path="/forgetpass" element={<ForgetPassword />} />
-     <Route
-  path="playvideo/:videoId"
-  element={
-    <ProtectRoute userData={userData}>
-      <PlayVideo key={window.location.pathname} />
-    </ProtectRoute>
-  }
-/>
+        <Route
+          path="playvideo/:videoId"
+          element={
+            <ProtectRoute userData={userData}>
+              <PlayVideo key={window.location.pathname} />
+            </ProtectRoute>
+          }
+        />
 
 
         {/* Home layout with nested routes */}
         <Route path="/" element={<Home />}>
           {/* Nested routes inside Home */}
+
+          <Route
+            path="/channelpage/:channelId"  // ✅ use :channelId for dynamic param
+            element={
+              <ProtectRoute userData={userData}>
+                <ChannelPage />
+              </ProtectRoute>
+            }
+          />
+
+
           <Route
             path="/shorts"
             element={
@@ -73,7 +85,7 @@ const App = () => {
               </ProtectRoute>
             }
           />
-            <Route
+          <Route
             path="playshort/:shortId"
             element={
               <ProtectRoute userData={userData}>
@@ -147,6 +159,7 @@ const App = () => {
               </ProtectRoute>
             }
           />
+
         </Route>
       </Routes>
     </>

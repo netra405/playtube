@@ -104,7 +104,7 @@ const Home = () => {
             )}
             {userData && userData.photoUrl ? (
               <img
-                src={userData.photoUrl}
+                src={userData?.photoUrl}
                 alt="User Avatar"
                 onClick={() => setPopup((prev) => !prev)}
                 className="w-9 h-9 rounded-full object-cover border border-gray-700 hidden md:flex cursor-pointer"

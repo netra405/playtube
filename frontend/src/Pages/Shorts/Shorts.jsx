@@ -14,6 +14,7 @@ import Description from '../../component/Description';
 import axios from 'axios';
 import { serverUrl } from '../../App';
 import ClipLoader from 'react-spinners/ClipLoader';
+import { useNavigate } from 'react-router-dom';
 
 const IconButton = ({ icon: Icon, active, label, count, onClick }) => (
   <button
@@ -50,6 +51,7 @@ const Shorts = () => {
   const [newComment, setNewComment] = useState("");
   const [replyOpen, setReplyOpen] = useState({});
   const [replyText, setReplyText] = useState({});
+  const navigate  = useNavigate()
 
   // -------------------- Auto play when visible --------------------
   useEffect(() => {
@@ -258,29 +260,29 @@ const Shorts = () => {
             {/* Video Info */}
             <div className="absolute bottom-0 left-0 w-full p-3 sm:p-4 bg-gradient-to-t from-black/80 via-black/40 to-transparent text-white space-y-1 sm:space-y-2">
               <div className="flex items-center justify-start gap-2 flex-wrap">
-                <img
-                  src={short.channel?.avatar || "/default-avatar.png"}
+                <img onClick={()=>navigate(`/channelpage/${short.channel?._id}`)}
+                  src={short?.channel?.avatar || "/default-avatar.png"}
                   className="w-8 h-8 rounded-full border border-gray-700"
                   alt=""
                 />
-                <span className="text-xs sm:text-sm text-gray-300 truncate">
-                  @{short.channel?.name?.toLowerCase() || "unknown"}
+                <span onClick={()=>navigate(`/channelpage/${short.channel?._id}`)} className="text-xs sm:text-sm text-gray-300 truncate">
+                  @{short?.channel?.name?.toLowerCase() || "unknown"}
                 </span>
                 <button
                   className={`text-[10px] sm:text-xs px-2 sm:px-3 py-1 rounded-full ${
-                    short.channel?.subscribers?.includes(userData?._id)
+                    short?.channel?.subscribers?.includes(userData?._id)
                       ? "bg-black text-white border border-gray-700"
                       : "bg-white text-black"
                   }`}
                   onClick={(e) => {
                     e.stopPropagation();
-                    handleSubscribe(short.channel?._id);
+                    handleSubscribe(short?.channel?._id);
                   }}
                   disabled={loading}
                 >
                   {loading ? (
                     <ClipLoader size={16} color="gray" />
-                  ) : short.channel?.subscribers?.includes(userData?._id) ? (
+                  ) : short?.channel?.subscribers?.includes(userData?._id) ? (
                     "Unsubscribe"
                   ) : (
                     "Subscribe"
@@ -289,11 +291,11 @@ const Shorts = () => {
               </div>
 
               <h3 className="font-bold text-sm sm:text-lg line-clamp-2">
-                {short.title}
+                {short?.title}
               </h3>
 
               <div className="flex flex-wrap gap-1">
-                {short.tags?.map((tag, idx) => (
+                {short?.tags?.map((tag, idx) => (
                   <span
                     key={idx}
                     className="bg-gray-800 text-gray-200 text-[10px] sm:text-xs px-2 py-1 rounded-full"
@@ -303,24 +305,24 @@ const Shorts = () => {
                 ))}
               </div>
 
-              <Description text={short.description} />
+              <Description text={short?.description} />
             </div>
 
             {/* Action Buttons */}
             <div className="absolute right-2 sm:right-3 bottom-24 sm:bottom-28 flex flex-col items-center text-center gap-3 sm:gap-5">
               <IconButton
-                onClick={() => toggleLike(short._id)}
+                onClick={() => toggleLike(short?._id)}
                 icon={FaThumbsUp}
                 label="Likes"
-                active={short.likes?.includes(userData?._id)}
-                count={short.likes?.length}
+                active={short?.likes?.includes(userData?._id)}
+                count={short?.likes?.length}
               />
               <IconButton
-                onClick={() => toggleDislike(short._id)}
+                onClick={() => toggleDislike(short?._id)}
                 icon={FaThumbsDown}
                 label="Dislikes"
-                active={short.dislikes?.includes(userData?._id)}
-                count={short.dislikes?.length}
+                active={short?.dislikes?.includes(userData?._id)}
+                count={short?.dislikes?.length}
               />
               <IconButton
                 onClick={(e) => {
@@ -330,7 +332,7 @@ const Shorts = () => {
                   );
                   setComments((prev) => ({
                     ...prev,
-                    [short._id]: short.comments,
+                    [short?._id]: short?.comments,
                   }));
                 }}
                 icon={FaComment}
@@ -342,16 +344,16 @@ const Shorts = () => {
                 onClick={(e) => {
                   e.stopPropagation();
                   const link = document.createElement("a");
-                  link.href = short.shortUrl;
-                  link.download = `${short.title || "video"}.mp4`;
+                  link.href = short?.shortUrl;
+                  link.download = `${short?.title || "video"}.mp4`;
                   link.click();
                 }}
               />
               <IconButton
-                onClick={() => toggleSave(short._id)}
+                onClick={() => toggleSave(short?._id)}
                 icon={FaBookmark}
                 label="Save"
-                active={short.saveBy?.includes(userData?._id)}
+                active={short?.saveBy?.includes(userData?._id)}
               />
             </div>
 
@@ -379,7 +381,7 @@ const Shorts = () => {
                     className="flex-1 bg-gray-900 text-white text-xs sm:text-sm p-2 rounded"
                   />
                   <button
-                    onClick={() => handleAddComment(short._id)}
+                    onClick={() => handleAddComment(short?._id)}
                     className="bg-gray-800 px-3 py-1 rounded text-xs border border-gray-700"
                   >
                     Post
@@ -387,8 +389,8 @@ const Shorts = () => {
                 </div>
 
                 <div className="space-y-3 mt-4">
-                  {comments[short._id]?.length > 0 ? (
-                    comments[short._id].map((comment) => (
+                  {comments[short?._id]?.length > 0 ? (
+                    comments[short?._id].map((comment) => (
                       <div
                         key={comment._id}
                         className="bg-gray-800/40 p-2 rounded-lg text-xs sm:text-sm"
