@@ -209,3 +209,19 @@ export const addReply = async (req, res) => {
         return res.status(500).json({ message: `Error adding reply: ${error}` });
     }
 };
+
+
+export const getLikedVideos = async (req, res)=> {
+    try {
+        const userId = req.userId;
+        const likedVideo = await Video.find({likes: userId})
+        .populate("channel", "name avatar")
+        .populate("likes", "userName")
+        if (!likedVideo) {
+            return res.status(400).json({message:"Failed to get liked Video"})
+        }
+        res.status(200).json(likedVideo)
+    } catch (error) {
+             return res.status(500).json({ message: `Error to find liked Videos: ${error}` });
+    }
+}

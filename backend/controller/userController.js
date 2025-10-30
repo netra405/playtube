@@ -182,10 +182,9 @@ export const toggleSubscribe = async (req,res) => {
     }
 }
 
-
 export const getAllChannelData = async (req, res) => {
   try {
-    console.log("Fetching all channels...");
+    console.log("📡 Fetching all channels...");
 
     const channels = await Channel.find()
       .populate("owner")
@@ -194,10 +193,22 @@ export const getAllChannelData = async (req, res) => {
       .populate("subscribers")
       .populate({
         path: "communityPosts",
-        populate: {
-          path: "channel",
-          model: "Channel",
-        },
+        populate: [
+          {
+            path: "channel",
+            model: "Channel",
+          },
+          {
+            path: "comments.author",
+            model: "User",
+            select: "userName photoUrl",
+          },
+          {
+            path: "comments.replies.author",
+            model: "User",
+            select: "userName photoUrl",
+          },
+        ],
       })
       .populate({
         path: "playlists",
@@ -211,7 +222,6 @@ export const getAllChannelData = async (req, res) => {
         },
       });
 
-    console.log("Channels fetched:", channels?.length);
 
     if (!channels || channels.length === 0) {
       return res.status(404).json({ message: "No channels found" });
@@ -219,7 +229,11 @@ export const getAllChannelData = async (req, res) => {
 
     return res.status(200).json(channels);
   } catch (error) {
-    return res.status(500).json({ message: `Failed to get all channels: ${error.message}` });
+    console.error("❌ Error fetching channels:", error);
+    return res
+      .status(500)
+      .json({ message: `Failed to get all channels: ${error.message}` });
   }
 };
+
 

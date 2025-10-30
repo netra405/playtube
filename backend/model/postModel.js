@@ -1,80 +1,73 @@
-import mongoose from "mongoose"
+import mongoose from "mongoose";
 
-const replySchema = new mongoose.Schema({
-
-      auuthor:{
-            type:mongoose.Schema.Types.ObjectId,
-            ref:"User",
+const replySchema = new mongoose.Schema(
+  {
+    author: { // ✅ fixed typo
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
     },
     message: {
-        type:String,
-          required:true
+      type: String,
+      required: true,
     },
-    createAt:{
-        type: Date,
-        default: Date.now
+    createdAt: { // ✅ fixed spelling
+      type: Date,
+      default: Date.now,
     },
-    updatedAt:{
-        type: Date
-    }
+    updatedAt: {
+      type: Date,
+    },
+  },
+  { _id: true }
+);
 
-
-},{_id:true})
-
-const commentSchema = new mongoose.Schema({
-
-
-    auuthor:{
-            type:mongoose.Schema.Types.ObjectId,
-            ref:"User",
+const commentSchema = new mongoose.Schema(
+  {
+    author: { // ✅ fixed typo
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
     },
     message: {
-        type:String,
-          required:true
+      type: String,
+      required: true,
     },
-    replies:[
-        replySchema
-    ],
-    createAt:{
-        type: Date,
-        default: Date.now
+    replies: [replySchema],
+    createdAt: { // ✅ fixed spelling
+      type: Date,
+      default: Date.now,
     },
-    updatedAt:{
-        type: Date
-    }
+    updatedAt: {
+      type: Date,
+    },
+  },
+  { _id: true }
+);
 
-
-
-}, {_id:true})
-
-const postSchema = new mongoose.Schema({
-
+const postSchema = new mongoose.Schema(
+  {
     channel: {
-            type:mongoose.Schema.Types.ObjectId,
-            ref:"Channel",
-            required: true
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Channel",
+      required: true,
     },
     content: {
-        type:String,
-        required:true
+      type: String,
+      required: true,
     },
-    image:{
-         type:String,
+    image: {
+      type: String,
     },
-    likes:[
-        { 
-            type:mongoose.Schema.Types.ObjectId,
-            ref:"User"
-        }
+    likes: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
     ],
-    comments: [
-        commentSchema
-    ]
+    comments: [commentSchema],
+  },
+  { timestamps: true }
+);
 
+const Post = mongoose.model("Post", postSchema);
 
-
-},{timestamps:true})
-
-const Post = mongoose.model("Post", postSchema)
-
-export default Post
+export default Post;

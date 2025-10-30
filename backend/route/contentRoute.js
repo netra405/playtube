@@ -41,7 +41,7 @@ contentRouter.post("/playlist/toggle-save", isAuth , toggleSavePlaylist)
 contentRouter.post("/create-post", isAuth , upload.single("image"), CreatePost)
 contentRouter.get("/getPosts", getAllPosts)
 contentRouter.post("/post/toggle-like", isAuth , toggleLikesForPost)
-contentRouter.post("/post/add-comment", isAuth , addCommentForPost)
+contentRouter.post("/post/add-comment", isAuth, addCommentForPost);
 contentRouter.post("/post/add-reply", isAuth , addReplyForPost)
 
 export default contentRouter

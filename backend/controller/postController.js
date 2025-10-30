@@ -68,62 +68,60 @@ export const toggleLikesForPost = async (req, res) => {
     }
 }
 
-
 export const addCommentForPost = async (req, res) => {
-    try {
-        const { postId } = req.body;
-        const { message } = req.body;
-        const userId = req.userId;
+  try {
+    const { postId, message } = req.body;
+    const userId = req.userId;
 
-        const post = await Post.findById(postId);
-        if (!post) return res.status(400).json({ message: "Post not found" });
+    const post = await Post.findById(postId);
+    if (!post) return res.status(400).json({ message: "Post not found" });
 
-        post.comments.push({ author: userId, message });
-        await post.save();
+    post.comments.push({ author: userId, message });
+    await post.save();
 
-        const populatedPost = await Post.findById(postId)
-            .populate({
-                path: "comments.author", // ✅ corrected
-                select: "userName photoUrl email"
-            })
-            .populate({
-                path: "comments.replies.author",
-                select: "userName photoUrl email"
-            });
+    const populatedPost = await Post.findById(postId)
+      .populate({
+        path: "comments.author",
+        select: "userName photoUrl email",
+      })
+      .populate({
+        path: "comments.replies.author",
+        select: "userName photoUrl email",
+      });
 
-        return res.status(200).json(populatedPost);
-    } catch (error) {
-        return res.status(500).json({ message: `Error adding comment: ${error}` });
-    }
+    return res.status(200).json(populatedPost);
+  } catch (error) {
+    return res.status(500).json({ message: `Error adding comment: ${error}` });
+  }
 };
 
+// ✅ Add reply
 export const addReplyForPost = async (req, res) => {
-    try {
-        const { postId, commentId } = req.body;
-        const { message } = req.body;
-        const userId = req.userId;
+  try {
+    const { postId, commentId, message } = req.body;
+    const userId = req.userId;
 
-        const post = await Post.findById(postId);
-        if (!post) return res.status(400).json({ message: "post not found" });
+    const post = await Post.findById(postId);
+    if (!post) return res.status(400).json({ message: "Post not found" });
 
-        const comment = post.comments.id(commentId);
-        if (!comment) return res.status(400).json({ message: "Comment not found" });
+    const comment = post.comments.id(commentId);
+    if (!comment) return res.status(400).json({ message: "Comment not found" });
 
-        comment.replies.push({ author: userId, message });
-        await post.save();
+    comment.replies.push({ author: userId, message });
+    await post.save();
 
-        const populatedPost = await Post.findById(postId)
-            .populate({
-                path: "comments.author",
-                select: "userName photoUrl email"
-            })
-            .populate({
-                path: "comments.replies.author",
-                select: "userName photoUrl email"
-            });
+    const populatedPost = await Post.findById(postId)
+      .populate({
+        path: "comments.author",
+        select: "userName photoUrl email",
+      })
+      .populate({
+        path: "comments.replies.author",
+        select: "userName photoUrl email",
+      });
 
-        return res.status(200).json(populatedPost);
-    } catch (error) {
-        return res.status(500).json({ message: `Error adding reply: ${error}` });
-    }
+    return res.status(200).json(populatedPost);
+  } catch (error) {
+    return res.status(500).json({ message: `Error adding reply: ${error}` });
+  }
 };
