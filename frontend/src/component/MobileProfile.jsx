@@ -302,9 +302,9 @@ const MobileProfile = () => {
       {/* Menu Items */}
       <div className="flex flex-col mt-4 md:mt-6 space-y-2">
         <ProfileMenuItem icon={<FaHistory />} text={"History"} />
-        <ProfileMenuItem icon={<FaList />} text={"Playlists"} />
-        <ProfileMenuItem icon={<GoVideo />} text={"Saved Videos"} />
-        <ProfileMenuItem icon={<FaThumbsUp />} text={"Liked Videos"} />
+        <ProfileMenuItem icon={<FaList />} text={"Playlists"} onClick={()=>navigate("/savedplaylist")} />
+        <ProfileMenuItem icon={<GoVideo />} text={"Saved Videos"} onClick={()=>navigate("/savedcontent")} />
+        <ProfileMenuItem icon={<FaThumbsUp />} text={"Liked Videos"} onClick={()=>navigate("/likedcontent")} />
         {userData && <ProfileMenuItem icon={<SiYoutubestudio />} text={"PT Studio"} />}
       </div>
     </div>

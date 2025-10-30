@@ -85,3 +85,21 @@ export const toggleSavePlaylist = async (req, res) => {
     return res.status(500).json({ message: error.message });
   }
 };
+
+
+export const getSavedPlaylist = async (req, res)=> {
+ try {
+    const userId = req.userId;
+    const savedPlaylist = await Playlist.find({ saveBy: userId })
+    .populate("videos")
+    .populate({
+      path: "videos",
+      populate: {path: "channel"}
+    })
+    
+
+    res.status(200).json(savedPlaylist);
+  } catch (error) {
+    return res.status(500).json({ message: `Error fetching saved shorts: ${error}` });
+  }
+}

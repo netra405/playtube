@@ -1,5 +1,8 @@
 
 
+
+
+// // ...existing code...
 // import React from "react";
 // import { Route, Routes, Navigate } from "react-router-dom";
 // import { useSelector } from "react-redux";
@@ -25,7 +28,7 @@
 // import PlayVideo from "./Pages/Videos/PlayVideo";
 // import PlayShort from "./Pages/Shorts/PlayShort";
 // import ChannelPage from "./Pages/Channel/ChannelPage";
-
+// import LikedContent from "./Pages/LikedContent";
 
 // export const serverUrl = "http://localhost:8000";
 
@@ -39,9 +42,10 @@
 // };
 
 // const App = () => {
+//   // custom hooks that fetch/store initial data
 //   GetCurrentUser();
 //   GetChannelData();
-//   GetAllContentData()
+//   GetAllContentData();
 
 //   const { userData } = useSelector((state) => state.user);
 
@@ -53,8 +57,10 @@
 //         <Route path="/signup" element={<SignUp />} />
 //         <Route path="/signin" element={<SignIn />} />
 //         <Route path="/forgetpass" element={<ForgetPassword />} />
+
+//         {/* Direct play video route */}
 //         <Route
-//           path="playvideo/:videoId"
+//           path="/playvideo/:videoId"
 //           element={
 //             <ProtectRoute userData={userData}>
 //               <PlayVideo key={window.location.pathname} />
@@ -62,23 +68,29 @@
 //           }
 //         />
 
-
 //         {/* Home layout with nested routes */}
 //         <Route path="/" element={<Home />}>
-//           {/* Nested routes inside Home */}
-
 //           <Route
-//             path="/channelpage/:channelId"  // ✅ use :channelId for dynamic param
+//             path="channelpage/:channelId"
 //             element={
 //               <ProtectRoute userData={userData}>
-//                 <ChannelPage  key={window.location.pathname}/>
+//                 <ChannelPage key={window.location.pathname} />
 //               </ProtectRoute>
 //             }
-//           />
-
+//           >
+//             {/* nested playvideo under a channel (optional) */}
+//             <Route
+//               path="playvideo/:videoId"
+//               element={
+//                 <ProtectRoute userData={userData}>
+//                   <PlayVideo />
+//                 </ProtectRoute>
+//               }
+//             />
+//           </Route>
 
 //           <Route
-//             path="/shorts"
+//             path="shorts"
 //             element={
 //               <ProtectRoute userData={userData}>
 //                 <Shorts />
@@ -94,9 +106,8 @@
 //             }
 //           />
 //           <Route path="mobilepro" element={<MobileProfile />} />
-
 //           <Route
-//             path="/viewchannel"
+//             path="viewchannel"
 //             element={
 //               <ProtectRoute userData={userData}>
 //                 <ViewChannel />
@@ -104,7 +115,7 @@
 //             }
 //           />
 //           <Route
-//             path="/updatechannel"
+//             path="updatechannel"
 //             element={
 //               <ProtectRoute userData={userData}>
 //                 <UpdateChannel />
@@ -112,7 +123,7 @@
 //             }
 //           />
 //           <Route
-//             path="/create"
+//             path="create"
 //             element={
 //               <ProtectRoute userData={userData}>
 //                 <CreatePage />
@@ -120,7 +131,7 @@
 //             }
 //           />
 //           <Route
-//             path="/createvideo"
+//             path="createvideo"
 //             element={
 //               <ProtectRoute userData={userData}>
 //                 <CreateVideo />
@@ -128,7 +139,7 @@
 //             }
 //           />
 //           <Route
-//             path="/createshort"
+//             path="createshort"
 //             element={
 //               <ProtectRoute userData={userData}>
 //                 <CreateShort />
@@ -136,7 +147,7 @@
 //             }
 //           />
 //           <Route
-//             path="/createplaylist"
+//             path="createplaylist"
 //             element={
 //               <ProtectRoute userData={userData}>
 //                 <CreatePlaylist />
@@ -144,7 +155,7 @@
 //             }
 //           />
 //           <Route
-//             path="/createpost"
+//             path="createpost"
 //             element={
 //               <ProtectRoute userData={userData}>
 //                 <CreatePost />
@@ -152,7 +163,7 @@
 //             }
 //           />
 //           <Route
-//             path="/createchannel"
+//             path="createchannel"
 //             element={
 //               <ProtectRoute userData={userData}>
 //                 <CreateChannel />
@@ -160,16 +171,24 @@
 //             }
 //           />
 
+//            <Route
+//             path="likedcontent"
+//             element={
+//               <ProtectRoute userData={userData}>
+//                 <LikedContent />
+//               </ProtectRoute>
+//             }
+//           />
 //         </Route>
+
+//         {/* Fallback */}
+//         <Route path="*" element={<Navigate to="/" replace />} />
 //       </Routes>
 //     </>
 //   );
 // };
 
 // export default App;
-
-
-
 
 
 // ...existing code...
@@ -198,6 +217,9 @@ import GetAllContentData from "./customHooks/GetAllContentData";
 import PlayVideo from "./Pages/Videos/PlayVideo";
 import PlayShort from "./Pages/Shorts/PlayShort";
 import ChannelPage from "./Pages/Channel/ChannelPage";
+import LikedContent from "./Pages/LikedContent";
+import SavedContent from "./Pages/SavedContent";
+import SavedPlaylist from "./Pages/Playlist/SavedPlaylist";
 
 export const serverUrl = "http://localhost:8000";
 
@@ -339,6 +361,32 @@ const App = () => {
               </ProtectRoute>
             }
           />
+
+          <Route
+            path="likedcontent"
+            element={
+              <ProtectRoute userData={userData}>
+                <LikedContent />
+              </ProtectRoute>
+            }
+          />
+
+           <Route
+            path="savedcontent"
+            element={
+              <ProtectRoute userData={userData}>
+                <SavedContent />
+              </ProtectRoute>
+            }
+          />
+           <Route
+            path="savedplaylist"
+            element={
+              <ProtectRoute userData={userData}>
+                <SavedPlaylist />
+              </ProtectRoute>
+            }
+          />
         </Route>
 
         {/* Fallback */}
@@ -349,3 +397,4 @@ const App = () => {
 };
 
 export default App;
+// ...existing code...

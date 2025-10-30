@@ -127,6 +127,9 @@ export const toggleSave = async (req, res) =>{
             video.saveBy.push(userId)
         }
 
+         await video.populate("comments.author", "userName photoUrl")
+         await video.populate("channel")
+         await video.populate("comments.replies.author", "userName photoUrl")
         await video.save()
         return res.status(200).json(video)
     } catch (error) {
@@ -134,6 +137,8 @@ export const toggleSave = async (req, res) =>{
     }
 }
 
+
+    
 export const getViews = async (req, res) =>{
     try {
         const {videoId} = req.params;
@@ -225,3 +230,28 @@ export const getLikedVideos = async (req, res)=> {
              return res.status(500).json({ message: `Error to find liked Videos: ${error}` });
     }
 }
+
+
+export const getSavedVideos = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const savedVideos = await Video.find({ saveBy: userId })
+      .populate("channel", "name avatar") // ✅ populate channel's name and avatar
+      .populate({
+        path: "comments",
+        populate: {
+          path: "author",  // make sure comments have author info
+          select: "userName photoUrl"
+        }
+      })
+      .populate("likes", "userName");
+
+    res.status(200).json(savedVideos);
+  } catch (error) {
+    return res.status(500).json({ message: `Error fetching saved videos: ${error}` });
+  }
+};
+
+
+
+

@@ -177,21 +177,21 @@ const Home = () => {
             text="Playlists"
             open={sidebarOpen}
             selected={selectedItem === "Playlists"}
-            onClick={() => setSelectedItem("Playlists")}
+            onClick={() => {setSelectedItem("Playlists"); navigate("/savedplaylist")}}
           />
           <SidebarItem
             icon={<GoVideo />}
             text="Saved Videos"
             open={sidebarOpen}
             selected={selectedItem === "Saved Videos"}
-            onClick={() => setSelectedItem("Saved Videos")}
+            onClick={() => {setSelectedItem("Saved Videos"); navigate("/savedcontent")}}
           />
           <SidebarItem
             icon={<FaThumbsUp />}
             text="Liked Videos"
             open={sidebarOpen}
             selected={selectedItem === "Liked Videos"}
-            onClick={() => setSelectedItem("Liked Videos")}
+            onClick={() => {setSelectedItem("Liked Videos"); navigate("/likedcontent")}}
           />
         </nav>
 

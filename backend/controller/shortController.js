@@ -206,3 +206,42 @@ export const addReply1 = async (req, res) => {
         return res.status(500).json({ message: `Error adding reply: ${error}` });
     }
 };
+
+
+export const getLikedshorts = async (req, res)=> {
+    try {
+        const userId = req.userId;
+        const likedShort = await Short.find({likes: userId})
+        .populate("channel", "name avatar")
+        .populate("likes", "userName")
+        if (!likedShort) {
+            return res.status(400).json({message:"Failed to get liked Shorts"})
+        }
+        res.status(200).json(likedShort)
+    } catch (error) {
+             return res.status(500).json({ message: `Error to find liked Shorts: ${error}` });
+    }
+}
+
+export const getSavedShorts = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const savedShorts = await Short.find({ saveBy: userId })
+      .populate("channel", "name avatar")
+      .populate({
+        path: "comments",
+        populate: {
+          path: "author",
+          select: "userName photoUrl"
+        }
+      })
+      .populate("likes", "userName");
+
+    res.status(200).json(savedShorts);
+  } catch (error) {
+    return res.status(500).json({ message: `Error fetching saved shorts: ${error}` });
+  }
+};
+
+
+
