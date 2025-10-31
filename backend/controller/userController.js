@@ -5,18 +5,18 @@ import uploadOnCloudinary from "../config/cloudinary.js"
 
 
 
-export const getCurrentUser = async (req,res)=>{
-    try {
-        const user = await User.findById(req.userId).select("-password")
-        if (!user) {
-            return res.status(404).json({message:"User is not found"})
-        }
-        return res.status(200).json(user)
-
-
-    } catch (error) {
-        res.status(500).json({message:`getCurrentUser error ${error}`})
+export const getCurrentUser = async (req, res) => {
+  try {
+    const user = await User.findById(req.userId).select("-password")
+    if (!user) {
+      return res.status(404).json({ message: "User is not found" })
     }
+    return res.status(200).json(user)
+
+
+  } catch (error) {
+    res.status(500).json({ message: `getCurrentUser error ${error}` })
+  }
 }
 
 
@@ -89,97 +89,97 @@ export const createChannel = async (req, res) => {
 };
 
 
-export const updateChannel = async (req, res)=> {
-    try {
+export const updateChannel = async (req, res) => {
+  try {
 
-          const {name, description, category} = req.body;
-        const userId = req.userId;
-        const channel = await Channel.findOne({owner:userId})
-        if (!channel) {
-            return res.status(404).json({message:"Channel is not found."})
-        }
-        if (name && name !== channel.name) {
-        
-            const nameExists = await Channel.findOne({name})
-            if (nameExists) {
-                return res.status(400).json({message:"Channel name already taken"})
-            }
-            channel.name = name
-        }
-
-        if (description !== undefined) {
-            channel.description = description
-        }
-        if (category !== undefined) {
-            channel.category = category
-        }
-
-          if (req.files?.avatar) {
-            const avatar = await uploadOnCloudinary(req.files.avatar[0].path)
-            channel.avatar = avatar
-        }
-        if (req.files?.banner) {
-            const banner = await uploadOnCloudinary(req.files.banner[0].path)
-            channel.banner = banner
-        }
-        const uupdatedChannel = await channel.save()
-
-         await User.findByIdAndUpdate(userId , {
-            userName:name || undefined,
-            photoUrl:channel.avatar || undefined
-        }, {new:true})
-
-        return res.status(200).json(updateChannel)
-
-        
-    } catch (error) {
-         return res.status(500).json({message:`Update channel error ${error}`})
+    const { name, description, category } = req.body;
+    const userId = req.userId;
+    const channel = await Channel.findOne({ owner: userId })
+    if (!channel) {
+      return res.status(404).json({ message: "Channel is not found." })
     }
+    if (name && name !== channel.name) {
+
+      const nameExists = await Channel.findOne({ name })
+      if (nameExists) {
+        return res.status(400).json({ message: "Channel name already taken" })
+      }
+      channel.name = name
+    }
+
+    if (description !== undefined) {
+      channel.description = description
+    }
+    if (category !== undefined) {
+      channel.category = category
+    }
+
+    if (req.files?.avatar) {
+      const avatar = await uploadOnCloudinary(req.files.avatar[0].path)
+      channel.avatar = avatar
+    }
+    if (req.files?.banner) {
+      const banner = await uploadOnCloudinary(req.files.banner[0].path)
+      channel.banner = banner
+    }
+    const uupdatedChannel = await channel.save()
+
+    await User.findByIdAndUpdate(userId, {
+      userName: name || undefined,
+      photoUrl: channel.avatar || undefined
+    }, { new: true })
+
+    return res.status(200).json(updateChannel)
+
+
+  } catch (error) {
+    return res.status(500).json({ message: `Update channel error ${error}` })
+  }
 }
 
 
 
-export const getChannelData = async (req, res)=>{
-    try {
-        const userId = req.userId
-        const channel = await Channel.findOne({owner:userId}).populate("owner").populate("videos").populate("shorts")
+export const getChannelData = async (req, res) => {
+  try {
+    const userId = req.userId
+    const channel = await Channel.findOne({ owner: userId }).populate("owner").populate("videos").populate("shorts")
 
-        if (!channel) {
-            return req.status(404).json({message:"Channel is not found"})
-            }
-
-            return res.status(200).json(channel)
-    } catch (error) {
-        return res.status(500).json({message:`Failed to get channel error ${error}`})
+    if (!channel) {
+      return req.status(404).json({ message: "Channel is not found" })
     }
+
+    return res.status(200).json(channel)
+  } catch (error) {
+    return res.status(500).json({ message: `Failed to get channel error ${error}` })
+  }
 }
 
-export const toggleSubscribe = async (req,res) => {
-    try {
-        const {channelId} = req.body;
-        const userId = req.userId;
+export const toggleSubscribe = async (req, res) => {
+  try {
+    const { channelId } = req.body;
+    const userId = req.userId;
 
-        if (!channelId) {
-            return res.status(400).json({message:"ChannelId is required"})
-        }
-        const channel = await Channel.findById(channelId)
-        if (!channel) {
-            return res.status(404).json({message: "Channel is not found"})
-        }
-        const isSubscribed = channel?.subscribers?.includes(userId)
-
-        if (isSubscribed) {
-            channel?.subscribers.pull(userId)
-        }else{
-            channel?.subscribers.push(userId)
-        }
-        await channel.save()
-
-        const updatedChannel = await Channel.findById(channelId).populate("owner").populate("videos").populate("shorts")
-        return res.status(200).json(updatedChannel)
-    } catch (error) {
-         return res.status(500).json({message:`Failed to toggleSubscribers ${error}`})
+    if (!channelId) {
+      return res.status(400).json({ message: "ChannelId is required" })
     }
+    const channel = await Channel.findById(channelId)
+    if (!channel) {
+      return res.status(404).json({ message: "Channel is not found" })
+    }
+    const isSubscribed = channel?.subscribers?.includes(userId)
+
+    if (isSubscribed) {
+      channel?.subscribers.pull(userId)
+    } else {
+      channel?.subscribers.push(userId)
+    }
+    await channel.save()
+
+    const updatedChannel = await Channel.findById(channelId).populate("owner").populate("videos").populate("shorts")
+    return res.status(200).json(updatedChannel)
+  } catch (error) {
+    return res.status(500).json({ message: `Failed to toggleSubscribers ${error}` })
+  }
 }
 
 export const getAllChannelData = async (req, res) => {
@@ -236,4 +236,66 @@ export const getAllChannelData = async (req, res) => {
   }
 };
 
+
+export const getSubscribedData = async (req, res) => {
+  try {
+    const userId = req.userId;
+
+    const subscribedChannels = await Channel.find({ subscribers: userId })
+      .populate({
+        path: "videos",
+        populate: { path: "channel", select: "name avatar" },
+      })
+      .populate({
+        path: "shorts",
+        populate: { path: "channel", select: "name avatar" },
+      })
+      .populate({
+        path: "playlists",
+        populate: [
+          { path: "channel", select: "name avatar" },
+          { path: "videos", populate: { path: "channel", select: "name avatar" } }
+        ]
+      })
+      .populate({
+        path: "communityPosts",
+        populate: [
+          { path: "channel", select: "name avatar" },
+          { 
+            path: "comments.author", // populates the author of each comment
+            model: "User",
+            select: "userName photoUrl email"
+          },
+          { 
+            path: "comments.replies.author", // populates the author of each reply
+            model: "User",
+            select: "userName photoUrl email"
+          }
+        ]
+      });
+
+    if (!subscribedChannels || subscribedChannels.length === 0) {
+      return res.status(404).json({ message: "No subscribed channels found" });
+    }
+
+    // Flatten all subscribed channel contents
+    const videos = subscribedChannels.flatMap((ch) => ch.videos || []);
+    const shorts = subscribedChannels.flatMap((ch) => ch.shorts || []);
+    const playlists = subscribedChannels.flatMap((ch) => ch.playlists || []);
+    const posts = subscribedChannels.flatMap((ch) => ch.communityPosts || []);
+
+    return res.status(200).json({
+      subscribedChannels,
+      videos,
+      shorts,
+      playlists,
+      posts,
+    });
+  } catch (error) {
+    console.error("Error fetching subscribed data:", error);
+    return res.status(500).json({
+      message: `Server error while fetching subscribed content: ${error.message}`,
+    });
+  }
+};
 

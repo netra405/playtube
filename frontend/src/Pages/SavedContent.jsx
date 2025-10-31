@@ -34,8 +34,8 @@ const SavedContent = () => {
         const fetchSavedContent = async () => {
             setLoading(true)
             try {
-             const resVideos = await axios.get(`${serverUrl}/api/content/savedvideo`, { withCredentials: true });
-const resShorts = await axios.get(`${serverUrl}/api/content/savedshort`, { withCredentials: true });
+                const resVideos = await axios.get(`${serverUrl}/api/content/savedvideo`, { withCredentials: true });
+                const resShorts = await axios.get(`${serverUrl}/api/content/savedshort`, { withCredentials: true });
 
 
 
@@ -77,7 +77,7 @@ const resShorts = await axios.get(`${serverUrl}/api/content/savedshort`, { withC
             {!loading && savedShorts.length > 0 && (
                 <>
                     <h2 className="text-2xl font-bold mb-6 pt-[10px] border-b border-gray-300 pb-2 flex items-center gap-2">
-                        <SiYoutubeshorts className="w-7 h-7 text-red-600" />
+                        <SiYoutubeshorts className="w-7 h-7 text-orange-600" />
                         Saved Shorts
                     </h2>
 
@@ -101,7 +101,7 @@ const resShorts = await axios.get(`${serverUrl}/api/content/savedshort`, { withC
             {!loading && savedVideos.length > 0 && (
                 <>
                     <h2 className="text-2xl font-bold mb-6 pt-[10px] border-b border-gray-300 pb-2 flex items-center gap-2">
-                        <GoVideo className="w-7 h-7 text-red-600" />
+                        <GoVideo className="w-7 h-7 text-orange-600" />
                         Saved Videos
                     </h2>
 

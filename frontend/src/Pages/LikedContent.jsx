@@ -77,7 +77,7 @@ const LikedContent = () => {
       {!loading && likedShort.length > 0 && (
         <>
           <h2 className="text-2xl font-bold mb-6 pt-[10px] border-b border-gray-300 pb-2 flex items-center gap-2">
-            <SiYoutubeshorts className="w-7 h-7 text-red-600" />
+            <SiYoutubeshorts className="w-7 h-7 text-orange-600" />
             Liked Shorts
           </h2>
 
@@ -100,7 +100,7 @@ const LikedContent = () => {
 
       {!loading && likedVideo.length > 0 && (
         <>
-          <h2 className="text-2xl font-bold mb-6 pt-[10px] border-b border-gray-300 pb-2 flex items-center gap-2"><GoVideo className="w-7 h-7 text-red-600"/>Liked Videos</h2>
+          <h2 className="text-2xl font-bold mb-6 pt-[10px] border-b border-gray-300 pb-2 flex items-center gap-2"><GoVideo className="w-7 h-7 text-orange-600"/>Liked Videos</h2>
              <div className="flex flex-wrap gap-6">
             {likedVideo.map((video) => (
               <div key={video?._id} className="flex-shrink-0">

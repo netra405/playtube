@@ -1,7 +1,6 @@
 import axios from 'axios'
 import React, { useEffect, useState } from 'react'
 import { serverUrl } from '../../App'
-import { SiYoutubeshorts } from 'react-icons/si'
 import { FaList } from 'react-icons/fa'
 import PlaylistCard from '../../component/PlaylistCard'
 
@@ -32,7 +31,7 @@ const SavedPlaylist = () => {
     return (
         <div className='p-6 min-h-screen bg-black text-white mt-[40px] lg:mt-[20px]'>
             <h2 className="text-2xl font-bold mb-6 pt-[10px] border-b border-gray-300 pb-2 flex items-center gap-2">
-                <SiYoutubeshorts className="w-7 h-7 text-red-600" />
+                <FaList className="w-7 h-7 text-red-600" />
                 Saved Playlist
             </h2>
 

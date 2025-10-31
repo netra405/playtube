@@ -26,6 +26,7 @@ import axios from "axios";
 import { serverUrl } from "../../App";
 import ClipLoader from "react-spinners/ClipLoader";
 import { setAllVideosData } from "../../redux/contentSlice";
+import { setSubscribedChannels } from "../../redux/userSlice";
 
 // ---------- Reusable Icon Button ----------
 
@@ -69,6 +70,8 @@ const PlayVideo = () => {
 
   const { allVideosData, allShortsData } = useSelector((state) => state.content);
   const { userData, allChannelData } = useSelector((state) => state.user);
+
+  
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const didAddViewRef = useRef(false);
@@ -346,6 +349,10 @@ const toggleSave = async () => {
       setLoading2(false);
     }
   };
+
+ 
+
+
 
   // On initial load, set isSubscribed when channel becomes available
   useEffect(() => {

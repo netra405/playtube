@@ -30,7 +30,7 @@ const Home = () => {
   const [active, setActive] = useState("Home");
   const navigate = useNavigate();
   const location = useLocation();
-  const { userData } = useSelector((state) => state.user);
+  const { userData, subscribedChannel } = useSelector((state) => state.user);
   const [popup, setPopup] = useState(false);
 
   const categories = [
@@ -54,7 +54,7 @@ const Home = () => {
   ];
 
 
-  
+
 
   return (
     <div className="bg-[#0f0f0f] text-white min-h-screen relative">
@@ -158,7 +158,7 @@ const Home = () => {
             text="Subscriptions"
             open={sidebarOpen}
             selected={selectedItem === "Subscriptions"}
-            onClick={() => setSelectedItem("Subscriptions")}
+            onClick={() => { setSelectedItem("Subscriptions"); navigate("/subscription") }}
           />
         </nav>
 
@@ -177,26 +177,43 @@ const Home = () => {
             text="Playlists"
             open={sidebarOpen}
             selected={selectedItem === "Playlists"}
-            onClick={() => {setSelectedItem("Playlists"); navigate("/savedplaylist")}}
+            onClick={() => { setSelectedItem("Playlists"); navigate("/savedplaylist") }}
           />
           <SidebarItem
             icon={<GoVideo />}
             text="Saved Videos"
             open={sidebarOpen}
             selected={selectedItem === "Saved Videos"}
-            onClick={() => {setSelectedItem("Saved Videos"); navigate("/savedcontent")}}
+            onClick={() => { setSelectedItem("Saved Videos"); navigate("/savedcontent") }}
           />
           <SidebarItem
             icon={<FaThumbsUp />}
             text="Liked Videos"
             open={sidebarOpen}
             selected={selectedItem === "Liked Videos"}
-            onClick={() => {setSelectedItem("Liked Videos"); navigate("/likedcontent")}}
+            onClick={() => { setSelectedItem("Liked Videos"); navigate("/likedcontent") }}
           />
         </nav>
 
         <hr className="border-gray-800 my-3" />
         {sidebarOpen && <p className="text-sm text-gray-400 px-2">Subscriptions</p>}
+        <div className="space-y-1 mt-1">
+          {subscribedChannel?.map((ch) => (
+            <button
+              key={ch?._id}
+            onClick={() => (setSelectedItem(ch?._id), navigate(`/channelpage/${ch?._id}`))}
+
+              className={`flex items-center ${sidebarOpen ? "gap-3 justify-start" : "justify-center"
+                } w-full text-left cursor-pointer p-2 rounded-lg transition ${selectedItem === ch._id ? "bg-[#272727]" : "hover:bg-gray-800"
+                }`}
+            >
+              <img src={ch?.avatar} className="w-6 h-6 rounded-full border border-gray-700 object-cover hover:scale-110 transition-transform duration-200" alt="" />
+             {sidebarOpen && <span className="text-sm text-white truncate">{ch?.name}</span>}
+             
+            </button>
+          ))}
+
+        </div>
       </aside>
 
       {/* Main content */}
@@ -218,8 +235,8 @@ const Home = () => {
               {popup && <Profile />}
             </div>
             <div className="mb-10">
-                <AllVideosPage/>
-                <AllShortsPage/>
+              <AllVideosPage />
+              <AllShortsPage />
             </div>
           </>
         )}
@@ -243,7 +260,7 @@ const Home = () => {
           icon={<SiYoutubeshorts />}
           text="Shorts"
           active={active === "Shorts"}
-          onClick={() => {setActive("Shorts"); navigate("/shorts")}}
+          onClick={() => { setActive("Shorts"); navigate("/shorts") }}
         />
         <MobileNavButton
           icon={<IoIosAddCircle size={28} />}
@@ -254,7 +271,7 @@ const Home = () => {
           icon={<MdOutlineSubscriptions />}
           text="Subscriptions"
           active={active === "Subscriptions"}
-          onClick={() => setActive("Subscriptions")}
+          onClick={() => { setActive("Subscriptions"); navigate("/subscription") }}
         />
         <MobileNavButton
           icon={
