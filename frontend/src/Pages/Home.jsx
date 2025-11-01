@@ -170,7 +170,7 @@ const Home = () => {
             text="History"
             open={sidebarOpen}
             selected={selectedItem === "History"}
-            onClick={() => setSelectedItem("History")}
+            onClick={() => {setSelectedItem("History"); navigate("/history")}}
           />
           <SidebarItem
             icon={<FaList />}

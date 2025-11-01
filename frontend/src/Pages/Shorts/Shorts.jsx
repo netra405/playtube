@@ -52,6 +52,7 @@ const Shorts = () => {
   const [replyOpen, setReplyOpen] = useState({});
   const [replyText, setReplyText] = useState({});
   const navigate  = useNavigate()
+  const [activeIndex, setActiveIndex] = useState(0)
 
   // -------------------- Auto play when visible --------------------
   useEffect(() => {
@@ -64,6 +65,7 @@ const Shorts = () => {
             if (entry.isIntersecting) {
               video.muted = false;
               video.play();
+              setActiveIndex(index)
               const currentShortId = shortList[index]?._id;
               if (!viewedShort.includes(currentShortId)) {
                 handleAddView(currentShortId);
@@ -226,6 +228,29 @@ const Shorts = () => {
       console.log(error);
     }
   };
+
+   useEffect(()=>{
+    const addHistory = async ()=> {
+      try {
+        const shortId = shortList[activeIndex]?._id
+        console.log(shortId)
+        if (!shortId) {
+          return
+        }
+        const res = await axios.post(
+          `${serverUrl}/api/user/add-history`,
+          {contentId: shortId,
+            contentType: "Short"
+          },
+          {withCredentials: true}
+        )
+        console.log(res.data)
+      } catch (error) {
+        console.log("Error adding history:", error)
+      }
+    }
+    if (shortList.length > 0) addHistory()
+   }, [activeIndex , shortList])
 
   // -------------------- JSX --------------------
   return (

@@ -222,6 +222,8 @@ import SavedContent from "./Pages/SavedContent";
 import SavedPlaylist from "./Pages/Playlist/SavedPlaylist";
 import Subscription from "./Pages/Subscription";
 import GetSubscribedData from "./customHooks/GetSubscribedData";
+import GetHistory from "./customHooks/GetHistory";
+import HistoryContent from "./Pages/HistoryContent";
 
 export const serverUrl = "http://localhost:8000";
 
@@ -240,6 +242,7 @@ const App = () => {
   GetChannelData();
   GetAllContentData();
   GetSubscribedData()
+  GetHistory()
 
   const { userData } = useSelector((state) => state.user);
 
@@ -374,7 +377,7 @@ const App = () => {
             }
           />
 
-           <Route
+          <Route
             path="savedcontent"
             element={
               <ProtectRoute userData={userData}>
@@ -382,7 +385,7 @@ const App = () => {
               </ProtectRoute>
             }
           />
-           <Route
+          <Route
             path="savedplaylist"
             element={
               <ProtectRoute userData={userData}>
@@ -390,11 +393,19 @@ const App = () => {
               </ProtectRoute>
             }
           />
-             <Route
+          <Route
             path="subscription"
             element={
               <ProtectRoute userData={userData}>
                 <Subscription />
+              </ProtectRoute>
+            }
+          />
+            <Route
+            path="history"
+            element={
+              <ProtectRoute userData={userData}>
+                <HistoryContent />
               </ProtectRoute>
             }
           />

@@ -247,6 +247,25 @@ const PlayShort = () => {
     }
   };
 
+   useEffect(()=>{
+  const addHistory = async ()=> {
+    try {
+      const res = await axios.post(
+        `${serverUrl}/api/user/add-history`,
+        {contentId: shortId,
+          contentType: "Short"
+        },
+        {withCredentials: true}
+      )
+      console.log(res.data)
+    } catch (error) {
+      console.log("Error adding history:", error)
+    }
+  }
+  if (shortId) addHistory()
+ }, [shortId])
+
+
   return (
     <div className="h-[100vh] w-full overflow-y-scroll hide-scrollbar snap-y snap-mandatory">
       {shortList.map((short, index) => (

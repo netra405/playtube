@@ -350,7 +350,23 @@ const toggleSave = async () => {
     }
   };
 
- 
+ useEffect(()=>{
+  const addHistory = async ()=> {
+    try {
+      const res = await axios.post(
+        `${serverUrl}/api/user/add-history`,
+        {contentId: videoId,
+          contentType: "Video"
+        },
+        {withCredentials: true}
+      )
+      console.log(res.data)
+    } catch (error) {
+      console.log("Error adding history:", error)
+    }
+  }
+  if (videoId) addHistory()
+ }, [videoId])
 
 
 

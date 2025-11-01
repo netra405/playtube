@@ -1,6 +1,8 @@
 import Channel from "../model/channelModel.js"
 import User from "../model/userModel.js"
 import uploadOnCloudinary from "../config/cloudinary.js"
+import Video from "../model/videoModel.js"
+import Short from "../model/shortModel.js"
 
 
 
@@ -299,3 +301,74 @@ export const getSubscribedData = async (req, res) => {
   }
 };
 
+export const addHistory = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const { contentId, contentType } = req.body;
+
+    // ✅ Fix spelling + correct contentType values
+    if (!["Video", "Short"].includes(contentType)) {
+      return res.status(400).json({ message: "Invalid contentType" });
+    }
+
+    let content;
+    if (contentType === "Video") {
+      content = await Video.findById(contentId);
+    } else {
+      content = await Short.findById(contentId);
+    }
+
+    if (!content) {
+      return res.status(404).json({ message: `${contentType} not found` });
+    }
+
+    // Remove previous entry (if exists)
+    await User.findByIdAndUpdate(userId, {
+      $pull: { history: { contentId, contentType } },
+    });
+
+    // Add new one with timestamp
+    await User.findByIdAndUpdate(userId, {
+      $push: {
+        history: { contentId, contentType, watchedAt: new Date() },
+      },
+    });
+
+    res.status(200).json({ message: "Added to history" });
+  } catch (error) {
+    console.log("addHistory error:", error);
+    res.status(500).json({
+      message: `Server error: ${error.message}`,
+    });
+  }
+};
+
+
+export const getHistory = async (req, res) => {
+  try {
+    const userId = req.userId;
+
+    const user = await User.findById(userId)
+      .populate({
+        path: "history.contentId",
+        populate: {
+          path: "channel",
+          select: "name avatar",
+        },
+      })
+      .select("history");
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const sortedHistory = [...user.history].sort(
+      (a, b) => new Date(b.watchedAt) - new Date(a.watchedAt)
+    );
+
+    res.status(200).json(sortedHistory);
+  } catch (error) {
+    console.error("History fetch error:", error);
+    res.status(500).json({ message: `Server error: ${error.message}` });
+  }
+};
