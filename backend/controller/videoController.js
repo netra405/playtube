@@ -3,51 +3,145 @@ import Channel from "../model/channelModel.js";
 import Video from "../model/videoModel.js";
 
 
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 export const createVideo = async (req, res) => {
-    try {
-        const { title, description, tags, channelId} = req.body;
-        if (!title || !req.files.video || !req.files.thumbnail || !channelId) {
-            return res.status(400).json({message:"title, videoUrl, thumbnail, channelId is required"})
-        }
-        const channelDate = await Channel.findById(channelId)
-        if (!channelDate) {
-            return res.status(400).json({message:"Channel is not found by Id"})
-        }
-        const uploadVideo = await uploadOnCloudinary(req.files.video[0].path);
-        const uploadThumbnail = await uploadOnCloudinary(req.files.thumbnail[0].path)
+  try {
+    const { title, description, tags, channelId } = req.body;
 
-        let parsedTag = []
-        if (tags) {
-            try {
-                parsedTag = JSON.parse(tags)
+    if (!title || !req.files?.video || !req.files?.thumbnail || !channelId) {
+      return res.status(400).json({
+        message: "title, videoUrl, thumbnail, and channelId are required",
+      });
+    }
+
+    // ✅ Verify channel
+    const channelData = await Channel.findById(channelId);
+    if (!channelData)
+      return res.status(400).json({ message: "Channel not found by Id" });
+
+    // ✅ Upload video and thumbnail to Cloudinary
+    const uploadVideo = await uploadOnCloudinary(req.files.video[0].path);
+    const uploadThumbnail = await uploadOnCloudinary(
+      req.files.thumbnail[0].path
+    );
+
+    // ✅ Parse tags (can come as JSON or comma-separated string)
+    let parsedTags = [];
+    if (tags) {
+      try {
+        parsedTags = JSON.parse(tags);
+      } catch {
+        parsedTags = tags.split(",").map((t) => t.trim());
+      }
+    }
+
+    // ✅ Initialize AI for automatic category detection
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+
+    const prompt = `
+You are an intelligent video classifier for a video streaming platform.
+Based on the title, description, and tags, predict:
+- The category (Music, Gaming, Vlogs, Education, Science & Tech, Travel, Comedy, etc.)
+- The content type (Vlog, Tutorial, Review, Travel, News, etc.)
+Return ONLY in this exact format:
+Category: <category>
+Type: <type>
+
+Title: ${title}
+Description: ${description}
+Tags: ${parsedTags.join(", ")}
+`;
+
+    const result = await model.generateContent(prompt);
+    const aiText = result.response.text().trim();
+
+    // ✅ Extract AI results
+    const categoryMatch = aiText.match(/Category:\s*(.*)/i);
+    const typeMatch = aiText.match(/Type:\s*(.*)/i);
+
+    const category = categoryMatch ? categoryMatch[1].trim() : "Others";
+    const type = typeMatch ? typeMatch[1].trim() : "General";
+
+    // ✅ Create video with AI metadata
+    const newVideo = await Video.create({
+      title,
+      description,
+      channel: channelData._id,
+      videoUrl: uploadVideo,
+      thumbnail: uploadThumbnail,
+      tags: parsedTags,
+      category,
+      type,
+    });
+
+    // ✅ Add video reference to channel
+    await Channel.findByIdAndUpdate(
+      channelData._id,
+      { $push: { videos: newVideo._id } },
+      { new: true }
+    );
+
+    return res.status(201).json({
+      message: "Video uploaded successfully with AI category detection",
+      video: newVideo,
+    });
+  } catch (error) {
+    console.error("Error creating video:", error);
+    return res.status(500).json({
+      message: `Failed to create video: ${error.message}`,
+    });
+  }
+};
+
+
+
+
+// export const createVideo = async (req, res) => {
+//     try {
+//         const { title, description, tags, channelId} = req.body;
+//         if (!title || !req.files.video || !req.files.thumbnail || !channelId) {
+//             return res.status(400).json({message:"title, videoUrl, thumbnail, channelId is required"})
+//         }
+//         const channelDate = await Channel.findById(channelId)
+//         if (!channelDate) {
+//             return res.status(400).json({message:"Channel is not found by Id"})
+//         }
+//         const uploadVideo = await uploadOnCloudinary(req.files.video[0].path);
+//         const uploadThumbnail = await uploadOnCloudinary(req.files.thumbnail[0].path)
+
+//         let parsedTag = []
+//         if (tags) {
+//             try {
+//                 parsedTag = JSON.parse(tags)
             
-        } catch (error) {
-            parsedTag = []
-        }
-        }
+//         } catch (error) {
+//             parsedTag = []
+//         }
+//         }
 
-        const newVideo = await Video.create({
-            title,
-            channel:channelDate._id,
-            description,
-            tags: parsedTag,
-            videoUrl:uploadVideo,
-            thumbnail:uploadThumbnail
-        })
+//         const newVideo = await Video.create({
+//             title,
+//             channel:channelDate._id,
+//             description,
+//             tags: parsedTag,
+//             videoUrl:uploadVideo,
+//             thumbnail:uploadThumbnail
+//         })
 
-        await Channel.findByIdAndUpdate(channelDate._id, 
-            {$push: {videos : newVideo._id}},
-            {new:true}
-        )
+//         await Channel.findByIdAndUpdate(channelDate._id, 
+//             {$push: {videos : newVideo._id}},
+//             {new:true}
+//         )
 
-        return res.status(201).json(newVideo)
+//         return res.status(201).json(newVideo)
       
 
-    } catch (error) {
-        return res.status(500).json({message:`Failed to create video ${error}`})
-    }
-}
+//     } catch (error) {
+//         return res.status(500).json({message:`Failed to create video ${error}`})
+//     }
+// }
 
 
 export const getAllVideos = async (req,res) => {

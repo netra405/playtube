@@ -1,8 +1,4 @@
 
-
-
-
-// // ...existing code...
 // import React from "react";
 // import { Route, Routes, Navigate } from "react-router-dom";
 // import { useSelector } from "react-redux";
@@ -29,23 +25,33 @@
 // import PlayShort from "./Pages/Shorts/PlayShort";
 // import ChannelPage from "./Pages/Channel/ChannelPage";
 // import LikedContent from "./Pages/LikedContent";
+// import SavedContent from "./Pages/SavedContent";
+// import SavedPlaylist from "./Pages/Playlist/SavedPlaylist";
+// import Subscription from "./Pages/Subscription";
+// import GetSubscribedData from "./customHooks/GetSubscribedData";
+// import GetHistory from "./customHooks/GetHistory";
+// import HistoryContent from "./Pages/HistoryContent";
 
 // export const serverUrl = "http://localhost:8000";
 
 // // ProtectRoute Component
 // const ProtectRoute = ({ userData, children }) => {
 //   if (!userData) {
-//     showCustomAlert("Please sign up first to use this feature!");
-//     return <Navigate to="/" replace />;
+//     showCustomAlert("Please sign up or sign in first to use this feature!");
+//     return <Navigate to="/signin" replace />;
 //   }
 //   return children;
 // };
+
+
 
 // const App = () => {
 //   // custom hooks that fetch/store initial data
 //   GetCurrentUser();
 //   GetChannelData();
 //   GetAllContentData();
+//   GetSubscribedData()
+//   GetHistory()
 
 //   const { userData } = useSelector((state) => state.user);
 
@@ -171,11 +177,44 @@
 //             }
 //           />
 
-//            <Route
+//           <Route
 //             path="likedcontent"
 //             element={
 //               <ProtectRoute userData={userData}>
 //                 <LikedContent />
+//               </ProtectRoute>
+//             }
+//           />
+
+//           <Route
+//             path="savedcontent"
+//             element={
+//               <ProtectRoute userData={userData}>
+//                 <SavedContent />
+//               </ProtectRoute>
+//             }
+//           />
+//           <Route
+//             path="savedplaylist"
+//             element={
+//               <ProtectRoute userData={userData}>
+//                 <SavedPlaylist />
+//               </ProtectRoute>
+//             }
+//           />
+//           <Route
+//             path="subscription"
+//             element={
+//               <ProtectRoute userData={userData}>
+//                 <Subscription />
+//               </ProtectRoute>
+//             }
+//           />
+//             <Route
+//             path="history"
+//             element={
+//               <ProtectRoute userData={userData}>
+//                 <HistoryContent />
 //               </ProtectRoute>
 //             }
 //           />
@@ -189,60 +228,71 @@
 // };
 
 // export default App;
+// // ...existing code...
 
 
-// ...existing code...
+
 import React from "react";
-import { Route, Routes, Navigate } from "react-router-dom";
+import { Route, Routes, Navigate, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 
 import Home from "./Pages/Home";
 import SignUp from "./Pages/SignUp";
 import SignIn from "./Pages/SignIn";
-import CustomAlert, { showCustomAlert } from "./component/CustomAlert";
+import ForgetPassword from "./Pages/ForgetPassword";
+
 import Shorts from "./Pages/Shorts/Shorts";
 import MobileProfile from "./component/MobileProfile";
-import ForgetPassword from "./Pages/ForgetPassword";
+
 import CreateChannel from "./Pages/Channel/CreateChannel";
 import ViewChannel from "./Pages/Channel/ViewChannel";
 import UpdateChannel from "./Pages/Channel/UpdateChannel";
+import ChannelPage from "./Pages/Channel/ChannelPage";
+
 import CreatePage from "./Pages/CreatePage";
 import CreateVideo from "./Pages/Videos/CreateVideo";
 import CreateShort from "./Pages/Shorts/CreateShort";
 import CreatePlaylist from "./Pages/Playlist/CreatePlaylist";
 import CreatePost from "./Pages/Post/CreatePost";
-import GetCurrentUser from "./customHooks/GetCurrentUser";
-import GetChannelData from "./customHooks/GetChannelData";
-import GetAllContentData from "./customHooks/GetAllContentData";
+
 import PlayVideo from "./Pages/Videos/PlayVideo";
 import PlayShort from "./Pages/Shorts/PlayShort";
-import ChannelPage from "./Pages/Channel/ChannelPage";
+
 import LikedContent from "./Pages/LikedContent";
 import SavedContent from "./Pages/SavedContent";
 import SavedPlaylist from "./Pages/Playlist/SavedPlaylist";
 import Subscription from "./Pages/Subscription";
-import GetSubscribedData from "./customHooks/GetSubscribedData";
-import GetHistory from "./customHooks/GetHistory";
 import HistoryContent from "./Pages/HistoryContent";
 
+import CustomAlert, { showCustomAlert } from "./component/CustomAlert";
+
+// Custom hooks
+import GetCurrentUser from "./customHooks/GetCurrentUser";
+import GetChannelData from "./customHooks/GetChannelData";
+import GetAllContentData from "./customHooks/GetAllContentData";
+import GetSubscribedData from "./customHooks/GetSubscribedData";
+import GetHistory from "./customHooks/GetHistory";
+
+// server URL
 export const serverUrl = "http://localhost:8000";
 
-// ProtectRoute Component
+// ✅ Protected Route (like YouTube)
 const ProtectRoute = ({ userData, children }) => {
+  const location = useLocation();
   if (!userData) {
-    showCustomAlert("Please sign up first to use this feature!");
-    return <Navigate to="/" replace />;
+    showCustomAlert("Please sign in to continue.");
+    return <Navigate to="/signin" state={{ from: location }} replace />;
   }
   return children;
 };
 
 const App = () => {
-  // custom hooks that fetch/store initial data
+  // Fetch essential data on app load
   GetCurrentUser();
   GetChannelData();
   GetAllContentData();
-  GetSubscribedData()
-  GetHistory()
+  GetSubscribedData();
+  GetHistory();
 
   const { userData } = useSelector((state) => state.user);
 
@@ -250,12 +300,12 @@ const App = () => {
     <>
       <CustomAlert />
       <Routes>
-        {/* Public routes */}
+        {/* 🔓 Public Routes */}
         <Route path="/signup" element={<SignUp />} />
         <Route path="/signin" element={<SignIn />} />
         <Route path="/forgetpass" element={<ForgetPassword />} />
 
-        {/* Direct play video route */}
+        {/* 🔒 Protected Video Access (direct link) */}
         <Route
           path="/playvideo/:videoId"
           element={
@@ -265,8 +315,9 @@ const App = () => {
           }
         />
 
-        {/* Home layout with nested routes */}
+        {/* 🔓 Home (main layout) */}
         <Route path="/" element={<Home />}>
+          {/* Channel Page */}
           <Route
             path="channelpage/:channelId"
             element={
@@ -275,7 +326,7 @@ const App = () => {
               </ProtectRoute>
             }
           >
-            {/* nested playvideo under a channel (optional) */}
+            {/* nested route inside channel */}
             <Route
               path="playvideo/:videoId"
               element={
@@ -286,6 +337,7 @@ const App = () => {
             />
           </Route>
 
+          {/* Shorts */}
           <Route
             path="shorts"
             element={
@@ -302,7 +354,26 @@ const App = () => {
               </ProtectRoute>
             }
           />
-          <Route path="mobilepro" element={<MobileProfile />} />
+
+          {/* Profile */}
+          <Route
+            path="mobilepro"
+            element={
+              <ProtectRoute userData={userData}>
+                <MobileProfile />
+              </ProtectRoute>
+            }
+          />
+
+          {/* Channel Creation and Update */}
+          <Route
+            path="createchannel"
+            element={
+              <ProtectRoute userData={userData}>
+                <CreateChannel />
+              </ProtectRoute>
+            }
+          />
           <Route
             path="viewchannel"
             element={
@@ -319,6 +390,8 @@ const App = () => {
               </ProtectRoute>
             }
           />
+
+          {/* Create Pages */}
           <Route
             path="create"
             element={
@@ -359,15 +432,8 @@ const App = () => {
               </ProtectRoute>
             }
           />
-          <Route
-            path="createchannel"
-            element={
-              <ProtectRoute userData={userData}>
-                <CreateChannel />
-              </ProtectRoute>
-            }
-          />
 
+          {/* Saved / Liked / Subscriptions / History */}
           <Route
             path="likedcontent"
             element={
@@ -376,7 +442,6 @@ const App = () => {
               </ProtectRoute>
             }
           />
-
           <Route
             path="savedcontent"
             element={
@@ -401,7 +466,7 @@ const App = () => {
               </ProtectRoute>
             }
           />
-            <Route
+          <Route
             path="history"
             element={
               <ProtectRoute userData={userData}>
@@ -411,7 +476,7 @@ const App = () => {
           />
         </Route>
 
-        {/* Fallback */}
+        {/* 🔁 Fallback Redirect */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </>
@@ -419,4 +484,4 @@ const App = () => {
 };
 
 export default App;
-// ...existing code...
+

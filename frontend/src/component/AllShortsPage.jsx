@@ -7,6 +7,8 @@ const AllShortsPage = () => {
   const { allShortsData } = useSelector((state) => state.content);
   const latestShorts = allShortsData?.slice(0, 10) || [];
 
+
+
   return (
     <div className="px-6 py-4">
       {/* Header */}

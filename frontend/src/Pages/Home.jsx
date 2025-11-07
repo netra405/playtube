@@ -28,6 +28,7 @@ import { showCustomAlert } from "../component/CustomAlert";
 import axios from "axios";
 import ClipLoader from "react-spinners/ClipLoader";
 import SearchResults from "../component/SearchResults";
+import FilterResults from "../component/FilterResults";
 
 const Home = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -130,7 +131,11 @@ const Home = () => {
   const [listening, setListening] = useState(false)
   const [input, setInput] = useState("")
   const [loading, setLoading] = useState(false)
+  const [loading1, setLoading1] = useState(false)
   const [searchData, setSearchData] = useState("")
+  const [filterData, setFilterData] = useState("")
+
+
 
   function speak(message) {
     let utterance = new SpeechSynthesisUtterance(message)
@@ -244,6 +249,51 @@ const Home = () => {
     "Vlogs",
   ];
 
+  const handleCategoryFilter = async (category)=> {
+    setLoading1(true)
+    try {
+      const result = await axios.post(serverUrl + "/api/content/filter", {input:category}, {withCredentials:true}) 
+
+      const { videos = [], shorts = [], channels = [] } = result.data;
+
+      let channelVideos = []
+      let channelShorts = []
+
+      channels.forEach((ch)=> {
+        if (ch.videos?.length) channelVideos.push(...ch.videos)
+          if(ch.shorts?.length) channelShorts.push(...ch.shorts)
+      })
+
+      setFilterData({
+        ...result.data,
+        videos: [...videos, ...channelVideos],
+        shorts: [...shorts, ...channelShorts],
+      })
+
+      setLoading1(false)
+      navigate("/")
+
+      console.log("Category filter merged:", {
+        ...result.data,
+        videos: [...videos, ...channelVideos],
+        shorts: [...shorts, ...channelShorts]
+      })
+
+      if (
+        videos.length > 0 ||
+        shorts.length > 0 ||
+        channelVideos.length > 0 ||
+        channelShorts.length > 0
+      ) {
+        speak(`Here are some ${category} videos and shorts for you`)
+      } else {
+        speak("No result found")
+      }
+    } catch (error) {
+      console.log("Category filter error:", error)
+      setLoading1(false)
+    }
+  }
 
 
 
@@ -493,6 +543,7 @@ const Home = () => {
               {categories.map((cat, idx) => (
                 <button
                   key={idx}
+                  onClick={()=>handleCategoryFilter(cat)}
                   className="whitespace-nowrap bg-[#272727] px-4 py-1 rounded-lg text-sm hover:bg-gray-700"
                 >
                   {cat}
@@ -501,7 +552,10 @@ const Home = () => {
               {popup && <Profile />}
             </div>
             <div className="mb-10">
+              {loading1 && <div className="w-full items-center flex justify-center">{loading1 ? <ClipLoader size={35} color="white" /> : ""}</div>}
               {searchData && <SearchResults searchResults={searchData}/>}
+              {filterData && <FilterResults filterResults={filterData}/>}
+
               <AllVideosPage />
               <AllShortsPage />
             </div>

@@ -284,17 +284,33 @@ const Profile = () => {
   const dispatch = useDispatch();
 
   // Sign out
-  const handleSignout = async () => {
+  // const handleSignout = async () => {
+  //   try {
+  //     await axios.get(`${serverUrl}/api/auth/signout`, { withCredentials: true });
+  //     dispatch(setUserData(null));
+  //     showCustomAlert("Sign Out Successfully");
+  //   } catch (err) {
+  //     console.log(err);
+  //     showCustomAlert("Sign Out error");
+  //   }
+  // };
+
+   const handleSignout = async () => {
     try {
       await axios.get(`${serverUrl}/api/auth/signout`, { withCredentials: true });
       dispatch(setUserData(null));
       showCustomAlert("Sign Out Successfully");
+
+      // ✅ Redirect to login page after signout
+      setTimeout(() => {
+        navigate("/signin");
+      }, 1000); // optional small delay for alert visibility
     } catch (err) {
       console.log(err);
       showCustomAlert("Sign Out error");
     }
   };
-
+    
   // Google Sign-In
   const handleGoogleAuth = async () => {
     try {

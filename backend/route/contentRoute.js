@@ -5,7 +5,7 @@ import { addComment, addReply, createVideo, getAllVideos, getLikedVideos, getSav
 import { addComment1, addReply1, createShort, getAllShorts, getLikedshorts, getSavedShorts, getViews1, toggleDisLikes1, toggleLikes1, toggleSave1 } from "../controller/shortController.js"
 import { createPlaylist, getSavedPlaylist, toggleSavePlaylist } from "../controller/playlistController.js"
 import { addCommentForPost, addReplyForPost, CreatePost, getAllPosts, toggleLikesForPost } from "../controller/postController.js"
-import { searchWithAi } from "../controller/aiController.js"
+import { filterCategoryWithAi, searchWithAi } from "../controller/aiController.js"
 
 
 const contentRouter = express.Router()
@@ -14,7 +14,7 @@ contentRouter.post("/create-video", isAuth, upload.fields([
     {name:"video", maxCount:1},
     {name:"thumbnail", maxCount:1}
 ]), createVideo)
-contentRouter.get("/getallvideos", isAuth, getAllVideos)
+contentRouter.get("/getallvideos",isAuth, getAllVideos)
 contentRouter.put("/video/:videoId/toggle-like", isAuth, toggleLikes)
 contentRouter.put("/video/:videoId/toggle-dislike", isAuth, toggleDisLikes)
 contentRouter.put("/video/:videoId/toggle-save", isAuth, toggleSave)
@@ -63,5 +63,6 @@ contentRouter.post("/post/add-reply", isAuth , addReplyForPost)
 
 
 contentRouter.post("/search", isAuth, searchWithAi)
+contentRouter.post("/filter", isAuth, filterCategoryWithAi)
 
 export default contentRouter
