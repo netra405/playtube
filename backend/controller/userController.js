@@ -372,3 +372,88 @@ export const getHistory = async (req, res) => {
     res.status(500).json({ message: `Server error: ${error.message}` });
   }
 };
+
+// A small list of common stopwords to ignore in recommendations
+const STOPWORDS = [
+  "the", "is", "in", "at", "of", "and", "a", "to", "for", "on", "with", "by", "an"
+];
+
+export const getRecommendedContent = async (req, res) => {
+  try {
+    const userId = req.userId;
+    if (!userId) return res.status(401).json({ message: "Unauthorized" });
+
+    const user = await User.findById(userId)
+      .populate("history.contentId")
+      .lean();
+
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    // Extract keywords from user history, likes, and saved content
+    const historyKeywords = user.history
+      .map(h => h.contentId?.title)
+      .filter(Boolean);
+
+    const likedSavedKeywords = [
+      ...(await Video.find({ likes: userId }).select("title")).map(v => v.title),
+      ...(await Short.find({ likes: userId }).select("title")).map(s => s.title),
+      ...(await Video.find({ saveBy: userId }).select("title")).map(v => v.title),
+      ...(await Short.find({ saveBy: userId }).select("title")).map(s => s.title)
+    ].filter(Boolean);
+
+    // Combine all keywords, split into words, remove stopwords, and limit to 20 keywords
+    const allKeywords = [...historyKeywords, ...likedSavedKeywords]
+      .map(k => k.split(/\s+/))
+      .flat()
+      .map(k => k.toLowerCase())
+      .filter(k => k && !STOPWORDS.includes(k))
+      .slice(0, 20);
+
+    // Build $or conditions for videos and shorts
+    const videoConditions = allKeywords.flatMap(kw => [
+      { title: { $regex: kw, $options: "i" } },
+      { description: { $regex: kw, $options: "i" } },
+      { tags: { $regex: kw, $options: "i" } }
+    ]);
+
+    const shortConditions = allKeywords.flatMap(kw => [
+      { title: { $regex: kw, $options: "i" } },
+      { tags: { $regex: kw, $options: "i" } }
+    ]);
+
+    // Fetch recommended videos and shorts
+    const recommendedVideos = await Video.find({ $or: videoConditions })
+      .limit(20)
+      .populate("channel comments.author comments.replies.author");
+
+    const recommendedShorts = await Short.find({ $or: shortConditions })
+      .limit(20)
+      .populate("channel", "name avatar")
+      .populate("likes", "userName photoUrl");
+
+    const recommendedVideoIds = recommendedVideos.map(v => v._id);
+    const recommendedShortIds = recommendedShorts.map(s => s._id);
+
+    // Fetch remaining videos and shorts as fallback (latest)
+    const remainingVideos = await Video.find({ _id: { $nin: recommendedVideoIds } })
+      .sort({ createdAt: -1 })
+      .limit(20)
+      .populate("channel");
+
+    const remainingShorts = await Short.find({ _id: { $nin: recommendedShortIds } })
+      .sort({ createdAt: -1 })
+      .limit(20)
+      .populate("channel");
+
+    return res.status(200).json({
+      recommendedVideos,
+      recommendedShorts,
+      remainingVideos,
+      remainingShorts,
+      userKeywords: allKeywords
+    });
+  } catch (error) {
+    console.error("Recommendation error:", error);
+    return res.status(500).json({ message: `Failed: ${error.message}` });
+  }
+};

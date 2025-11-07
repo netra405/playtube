@@ -272,6 +272,7 @@ import GetChannelData from "./customHooks/GetChannelData";
 import GetAllContentData from "./customHooks/GetAllContentData";
 import GetSubscribedData from "./customHooks/GetSubscribedData";
 import GetHistory from "./customHooks/GetHistory";
+import GetRecommendedContent from "./customHooks/GetRecommendedContent";
 
 // server URL
 export const serverUrl = "http://localhost:8000";
@@ -281,7 +282,7 @@ const ProtectRoute = ({ userData, children }) => {
   const location = useLocation();
   if (!userData) {
     showCustomAlert("Please sign in to continue.");
-    return <Navigate to="/signin" state={{ from: location }} replace />;
+    return <Navigate to="/" state={{ from: location }} replace />;
   }
   return children;
 };
@@ -293,6 +294,7 @@ const App = () => {
   GetAllContentData();
   GetSubscribedData();
   GetHistory();
+  GetRecommendedContent()
 
   const { userData } = useSelector((state) => state.user);
 

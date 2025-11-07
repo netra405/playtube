@@ -29,6 +29,7 @@ import axios from "axios";
 import ClipLoader from "react-spinners/ClipLoader";
 import SearchResults from "../component/SearchResults";
 import FilterResults from "../component/FilterResults";
+import RecommendedContent from "../component/RecommendedContent";
 
 const Home = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -555,6 +556,9 @@ const Home = () => {
               {loading1 && <div className="w-full items-center flex justify-center">{loading1 ? <ClipLoader size={35} color="white" /> : ""}</div>}
               {searchData && <SearchResults searchResults={searchData}/>}
               {filterData && <FilterResults filterResults={filterData}/>}
+
+              {userData ? <RecommendedContent/> : <><AllVideosPage />
+              <AllShortsPage /></>}
 
               <AllVideosPage />
               <AllShortsPage />

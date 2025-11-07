@@ -283,17 +283,7 @@ const Profile = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  // Sign out
-  // const handleSignout = async () => {
-  //   try {
-  //     await axios.get(`${serverUrl}/api/auth/signout`, { withCredentials: true });
-  //     dispatch(setUserData(null));
-  //     showCustomAlert("Sign Out Successfully");
-  //   } catch (err) {
-  //     console.log(err);
-  //     showCustomAlert("Sign Out error");
-  //   }
-  // };
+
 
    const handleSignout = async () => {
     try {
